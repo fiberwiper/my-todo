@@ -98,10 +98,7 @@
     }
 
     /* タスク一覧 */
-    #task-list {
-      flex: 1;
-      overflow-y: auto;
-    }
+    #task-list { flex: 1; overflow-y: auto; }
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -111,7 +108,7 @@
     .task-item {
       display: flex;
       align-items: center;
-      padding: 14px 16px;
+      padding: 12px 16px;
       background: #fff;
       border-bottom: 1px solid #f0f0f0;
       gap: 12px;
@@ -129,21 +126,22 @@
       font-size: 0.85rem;
       transition: all 0.15s;
     }
-    .task-check.done {
-      background: #34c759;
-      border-color: #34c759;
-      color: #fff;
-    }
+    .task-check.done { background: #34c759; border-color: #34c759; color: #fff; }
+    .task-body { flex: 1; min-width: 0; }
     .task-text {
-      flex: 1;
       font-size: 1rem;
       line-height: 1.4;
       word-break: break-all;
     }
-    .task-text.done {
-      text-decoration: line-through;
-      color: #aaa;
+    .task-text.done { text-decoration: line-through; color: #aaa; }
+    .due-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      margin-top: 3px;
+      color: #007aff;
     }
+    .due-badge.today { color: #ff9500; font-weight: 600; }
+    .due-badge.overdue { color: #ff3b30; font-weight: 600; }
     .task-delete {
       background: none;
       border: none;
@@ -157,13 +155,15 @@
 
     /* 入力エリア */
     #input-area {
-      display: flex;
-      gap: 8px;
-      padding: 10px 12px;
       background: #fff;
       border-top: 1px solid #e5e5ea;
       flex-shrink: 0;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
+    #input-row { display: flex; gap: 8px; }
     #task-input {
       flex: 1;
       padding: 10px 14px;
@@ -185,10 +185,81 @@
       cursor: pointer;
     }
     #add-btn:active { opacity: 0.8; }
+    #date-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    #due-date-input {
+      padding: 5px 10px;
+      border: 1px solid #e5e5ea;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: #1c1c1e;
+      background: #f5f5f7;
+    }
+    #clear-date-btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+
+    /* モーダル（ボトムシート） */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: flex-end;
+      z-index: 100;
+    }
+    .modal-sheet {
+      background: #f5f5f7;
+      border-radius: 16px 16px 0 0;
+      width: 100%;
+      padding: 12px 16px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .modal-title {
+      font-size: 0.8rem;
+      color: #888;
+      text-align: center;
+      padding: 4px 0 6px;
+    }
+    .modal-action-btn {
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #fff;
+      color: #007aff;
+      font-weight: 500;
+      text-align: center;
+    }
+    .modal-action-btn.danger { color: #ff3b30; }
+    .modal-action-btn.cancel { color: #1c1c1e; background: #fff; margin-top: 4px; }
+    .modal-input {
+      padding: 12px 14px;
+      border: 1px solid #e5e5ea;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      background: #fff;
+    }
+    .modal-input:focus { border-color: #007aff; }
   </style>
 </head>
 <body>
 
+<!-- ログイン画面 -->
 <div id="login-screen">
   <h1>📋 My ToDo</h1>
   <p>Googleアカウントでログインして始めよう</p>
@@ -198,6 +269,7 @@
   </button>
 </div>
 
+<!-- メイン画面 -->
 <div id="app">
   <header>
     <h1>My ToDo</h1>
@@ -213,8 +285,45 @@
   </div>
 
   <div id="input-area">
-    <input type="text" id="task-input" placeholder="タスクを追加...">
-    <button id="add-btn">追加</button>
+    <div id="input-row">
+      <input type="text" id="task-input" placeholder="タスクを追加...">
+      <button id="add-btn">追加</button>
+    </div>
+    <div id="date-row">
+      <span>📅 期限：</span>
+      <input type="date" id="due-date-input">
+      <button id="clear-date-btn" style="display:none">✕ クリア</button>
+    </div>
+  </div>
+</div>
+
+<!-- リスト操作モーダル -->
+<div id="list-action-modal" class="modal-overlay" style="display:none">
+  <div class="modal-sheet">
+    <div class="modal-title" id="list-action-title"></div>
+    <button class="modal-action-btn" id="list-rename-btn">名前を変更</button>
+    <button class="modal-action-btn danger" id="list-delete-btn">削除</button>
+    <button class="modal-action-btn cancel" id="list-cancel-btn">キャンセル</button>
+  </div>
+</div>
+
+<!-- 名前変更モーダル -->
+<div id="list-rename-modal" class="modal-overlay" style="display:none">
+  <div class="modal-sheet">
+    <div class="modal-title">リスト名を変更</div>
+    <input type="text" id="list-rename-input" class="modal-input">
+    <button class="modal-action-btn" id="list-rename-ok">変更する</button>
+    <button class="modal-action-btn cancel" id="list-rename-cancel">キャンセル</button>
+  </div>
+</div>
+
+<!-- リスト追加モーダル -->
+<div id="list-add-modal" class="modal-overlay" style="display:none">
+  <div class="modal-sheet">
+    <div class="modal-title">新しいリストを追加</div>
+    <input type="text" id="list-add-input" class="modal-input" placeholder="リスト名">
+    <button class="modal-action-btn" id="list-add-ok">追加する</button>
+    <button class="modal-action-btn cancel" id="list-add-cancel">キャンセル</button>
   </div>
 </div>
 
@@ -244,18 +353,16 @@
   let unsubscribeTasks = null;
   let unsubscribeLists = null;
   let allTasks = [];
+  let activeListForModal = null;
 
-  // ログイン
-  document.getElementById('login-btn').onclick = () => {
+  // ---- ログイン・ログアウト ----
+  document.getElementById('login-btn').onclick = () =>
     signInWithPopup(auth, provider).catch(err => alert('ログインに失敗しました: ' + err.message));
-  };
 
-  // ログアウト
   document.getElementById('logout-btn').onclick = () => {
     if (confirm('ログアウトしますか？')) signOut(auth);
   };
 
-  // 認証状態の監視
   onAuthStateChanged(auth, user => {
     currentUser = user;
     if (user) {
@@ -272,21 +379,19 @@
     }
   });
 
+  // ---- データ監視 ----
   function startListening() {
     const listsRef = collection(db, 'users', currentUser.uid, 'lists');
     unsubscribeLists = onSnapshot(query(listsRef, orderBy('createdAt')), snapshot => {
       const lists = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-
       if (lists.length === 0) {
         addDoc(listsRef, { name: '仕事', createdAt: serverTimestamp() });
         addDoc(listsRef, { name: '趣味', createdAt: serverTimestamp() });
         return;
       }
-
       if (!currentListId || !lists.find(l => l.id === currentListId)) {
         currentListId = lists[0].id;
       }
-
       renderListTabs(lists);
       renderTasks();
     });
@@ -298,6 +403,7 @@
     });
   }
 
+  // ---- リストタブ ----
   function renderListTabs(lists) {
     const container = document.getElementById('list-tabs');
     container.querySelectorAll('.list-tab').forEach(el => el.remove());
@@ -308,19 +414,54 @@
       tab.className = 'list-tab' + (list.id === currentListId ? ' active' : '');
       tab.dataset.listId = list.id;
       tab.textContent = list.name;
+
+      // タップでリスト切り替え
+      let longPressTimer = null;
+      tab.addEventListener('touchstart', () => {
+        longPressTimer = setTimeout(() => { longPressTimer = null; showListActionModal(list); }, 600);
+      }, { passive: true });
+      tab.addEventListener('touchend', () => clearTimeout(longPressTimer));
+      tab.addEventListener('touchmove', () => clearTimeout(longPressTimer));
       tab.onclick = () => {
         currentListId = list.id;
         document.querySelectorAll('.list-tab').forEach(t => t.classList.toggle('active', t.dataset.listId === list.id));
         renderTasks();
       };
-      tab.oncontextmenu = e => { e.preventDefault(); editOrDeleteList(list); };
+      // PCは右クリック
+      tab.oncontextmenu = e => { e.preventDefault(); showListActionModal(list); };
+
       container.insertBefore(tab, addBtn);
     });
   }
 
+  // ---- タスク表示 ----
+  function formatDueDate(dateStr) {
+    if (!dateStr) return null;
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const due = new Date(y, m - 1, d);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diff = Math.round((due - today) / 86400000);
+    const days = ['日', '月', '火', '水', '木', '金', '土'];
+    if (diff < 0) return { text: `${Math.abs(diff)}日超過`, cls: 'overdue' };
+    if (diff === 0) return { text: '今日', cls: 'today' };
+    if (diff === 1) return { text: '明日', cls: '' };
+    if (diff < 7) return { text: `${m}/${d}（${days[due.getDay()]}）`, cls: '' };
+    return { text: `${m}/${d}`, cls: '' };
+  }
+
+  function sortTasks(tasks) {
+    const undone = tasks.filter(t => !t.done).sort((a, b) => {
+      if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return 0;
+    });
+    return [...undone, ...tasks.filter(t => t.done)];
+  }
+
   function renderTasks() {
     const container = document.getElementById('task-list');
-    const tasks = allTasks.filter(t => t.listId === currentListId);
+    const tasks = sortTasks(allTasks.filter(t => t.listId === currentListId));
     container.innerHTML = '';
 
     if (tasks.length === 0) {
@@ -337,9 +478,23 @@
       check.textContent = task.done ? '✓' : '';
       check.onclick = () => updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: !task.done });
 
-      const text = document.createElement('span');
+      const body = document.createElement('div');
+      body.className = 'task-body';
+
+      const text = document.createElement('div');
       text.className = 'task-text' + (task.done ? ' done' : '');
       text.textContent = task.text;
+      body.appendChild(text);
+
+      if (task.dueDate && !task.done) {
+        const info = formatDueDate(task.dueDate);
+        if (info) {
+          const badge = document.createElement('div');
+          badge.className = 'due-badge ' + info.cls;
+          badge.textContent = '📅 ' + info.text;
+          body.appendChild(badge);
+        }
+      }
 
       const del = document.createElement('button');
       del.className = 'task-delete';
@@ -348,42 +503,92 @@
         if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id));
       };
 
-      item.append(check, text, del);
+      item.append(check, body, del);
       container.appendChild(item);
     });
   }
 
+  // ---- タスク追加 ----
   async function addTask() {
     const input = document.getElementById('task-input');
     const text = input.value.trim();
     if (!text || !currentListId) return;
+    const dueDate = document.getElementById('due-date-input').value || null;
     input.value = '';
     await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
-      text, listId: currentListId, done: false, createdAt: serverTimestamp()
+      text, listId: currentListId, done: false, dueDate, createdAt: serverTimestamp()
     });
-  }
-
-  document.getElementById('add-list-btn').onclick = () => {
-    const name = prompt('リスト名を入力してください');
-    if (name && name.trim()) {
-      addDoc(collection(db, 'users', currentUser.uid, 'lists'), { name: name.trim(), createdAt: serverTimestamp() });
-    }
-  };
-
-  function editOrDeleteList(list) {
-    const action = prompt(`「${list.name}」\n\n1 → 名前を変更\n2 → 削除\n\n番号を入力してください`);
-    if (action === '1') {
-      const name = prompt('新しいリスト名:', list.name);
-      if (name && name.trim()) updateDoc(doc(db, 'users', currentUser.uid, 'lists', list.id), { name: name.trim() });
-    } else if (action === '2') {
-      if (confirm(`「${list.name}」を削除しますか？\n（タスクは残ります）`)) {
-        deleteDoc(doc(db, 'users', currentUser.uid, 'lists', list.id));
-      }
-    }
   }
 
   document.getElementById('add-btn').onclick = addTask;
   document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+  // 日付クリアボタン
+  const dueDateInput = document.getElementById('due-date-input');
+  const clearDateBtn = document.getElementById('clear-date-btn');
+  dueDateInput.addEventListener('change', () => {
+    clearDateBtn.style.display = dueDateInput.value ? 'inline' : 'none';
+  });
+  clearDateBtn.onclick = () => {
+    dueDateInput.value = '';
+    clearDateBtn.style.display = 'none';
+  };
+
+  // ---- リスト追加モーダル ----
+  document.getElementById('add-list-btn').onclick = () => {
+    document.getElementById('list-add-input').value = '';
+    document.getElementById('list-add-modal').style.display = 'flex';
+    document.getElementById('list-add-input').focus();
+  };
+  document.getElementById('list-add-ok').onclick = () => {
+    const name = document.getElementById('list-add-input').value.trim();
+    if (name) addDoc(collection(db, 'users', currentUser.uid, 'lists'), { name, createdAt: serverTimestamp() });
+    document.getElementById('list-add-modal').style.display = 'none';
+  };
+  document.getElementById('list-add-cancel').onclick = () => {
+    document.getElementById('list-add-modal').style.display = 'none';
+  };
+  document.getElementById('list-add-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('list-add-ok').click();
+  });
+
+  // ---- リスト操作モーダル ----
+  function showListActionModal(list) {
+    activeListForModal = list;
+    document.getElementById('list-action-title').textContent = `「${list.name}」`;
+    document.getElementById('list-action-modal').style.display = 'flex';
+  }
+  document.getElementById('list-cancel-btn').onclick = () => {
+    document.getElementById('list-action-modal').style.display = 'none';
+  };
+  document.getElementById('list-action-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('list-action-modal'))
+      document.getElementById('list-action-modal').style.display = 'none';
+  });
+
+  document.getElementById('list-rename-btn').onclick = () => {
+    document.getElementById('list-action-modal').style.display = 'none';
+    document.getElementById('list-rename-input').value = activeListForModal.name;
+    document.getElementById('list-rename-modal').style.display = 'flex';
+    document.getElementById('list-rename-input').focus();
+  };
+  document.getElementById('list-rename-ok').onclick = () => {
+    const name = document.getElementById('list-rename-input').value.trim();
+    if (name) updateDoc(doc(db, 'users', currentUser.uid, 'lists', activeListForModal.id), { name });
+    document.getElementById('list-rename-modal').style.display = 'none';
+  };
+  document.getElementById('list-rename-cancel').onclick = () => {
+    document.getElementById('list-rename-modal').style.display = 'none';
+  };
+  document.getElementById('list-rename-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('list-rename-ok').click();
+  });
+
+  document.getElementById('list-delete-btn').onclick = () => {
+    document.getElementById('list-action-modal').style.display = 'none';
+    if (confirm(`「${activeListForModal.name}」を削除しますか？`))
+      deleteDoc(doc(db, 'users', currentUser.uid, 'lists', activeListForModal.id));
+  };
 </script>
 </body>
 </html>
