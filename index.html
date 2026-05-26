@@ -142,6 +142,7 @@
     }
     .due-badge.today { color: #ff9500; font-weight: 600; }
     .due-badge.overdue { color: #ff3b30; font-weight: 600; }
+    .task-body { cursor: pointer; }
     .task-delete {
       background: none;
       border: none;
@@ -294,6 +295,22 @@
       <input type="date" id="due-date-input">
       <button id="clear-date-btn" style="display:none">✕ クリア</button>
     </div>
+  </div>
+</div>
+
+<!-- タスク編集モーダル -->
+<div id="task-edit-modal" class="modal-overlay" style="display:none">
+  <div class="modal-sheet">
+    <div class="modal-title">タスクを編集</div>
+    <input type="text" id="task-edit-input" class="modal-input" placeholder="タスク名">
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+      <span style="font-size:0.85rem;color:#666">📅 期限：</span>
+      <input type="date" id="task-edit-date" style="padding:6px 10px;border:1px solid #e5e5ea;border-radius:8px;font-size:0.85rem;background:#f5f5f7">
+      <button id="task-edit-clear-date" style="background:none;border:none;color:#aaa;font-size:0.85rem;cursor:pointer">✕</button>
+    </div>
+    <button class="modal-action-btn" id="task-edit-ok">保存する</button>
+    <button class="modal-action-btn danger" id="task-edit-delete">削除</button>
+    <button class="modal-action-btn cancel" id="task-edit-cancel">キャンセル</button>
   </div>
 </div>
 
@@ -503,10 +520,44 @@
         if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id));
       };
 
+      body.onclick = () => showTaskEditModal(task);
+
       item.append(check, body, del);
       container.appendChild(item);
     });
   }
+
+  // ---- タスク編集モーダル ----
+  let activeTaskForEdit = null;
+
+  function showTaskEditModal(task) {
+    activeTaskForEdit = task;
+    document.getElementById('task-edit-input').value = task.text;
+    document.getElementById('task-edit-date').value = task.dueDate || '';
+    document.getElementById('task-edit-modal').style.display = 'flex';
+    document.getElementById('task-edit-input').focus();
+  }
+
+  document.getElementById('task-edit-ok').onclick = () => {
+    const text = document.getElementById('task-edit-input').value.trim();
+    if (!text) return;
+    const dueDate = document.getElementById('task-edit-date').value || null;
+    updateDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id), { text, dueDate });
+    document.getElementById('task-edit-modal').style.display = 'none';
+  };
+  document.getElementById('task-edit-delete').onclick = () => {
+    document.getElementById('task-edit-modal').style.display = 'none';
+    if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id));
+  };
+  document.getElementById('task-edit-cancel').onclick = () => {
+    document.getElementById('task-edit-modal').style.display = 'none';
+  };
+  document.getElementById('task-edit-clear-date').onclick = () => {
+    document.getElementById('task-edit-date').value = '';
+  };
+  document.getElementById('task-edit-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('task-edit-ok').click();
+  });
 
   // ---- タスク追加 ----
   async function addTask() {
