@@ -82,11 +82,7 @@
       color: #666;
       flex-shrink: 0;
     }
-    .list-tab.active {
-      border-bottom-color: #007aff;
-      color: #007aff;
-      font-weight: 600;
-    }
+    .list-tab.active { border-bottom-color: #007aff; color: #007aff; font-weight: 600; }
     .list-tab-add {
       padding: 10px 14px;
       border: none;
@@ -99,12 +95,7 @@
 
     /* タスク一覧 */
     #task-list { flex: 1; overflow-y: auto; }
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #aaa;
-      line-height: 1.8;
-    }
+    .empty-state { text-align: center; padding: 60px 20px; color: #aaa; line-height: 1.8; }
     .task-item {
       display: flex;
       align-items: center;
@@ -127,22 +118,20 @@
       transition: all 0.15s;
     }
     .task-check.done { background: #34c759; border-color: #34c759; color: #fff; }
-    .task-body { flex: 1; min-width: 0; }
-    .task-text {
-      font-size: 1rem;
-      line-height: 1.4;
-      word-break: break-all;
-    }
+    .task-body { flex: 1; min-width: 0; cursor: pointer; }
+    .task-text { font-size: 1rem; line-height: 1.4; word-break: break-all; }
     .task-text.done { text-decoration: line-through; color: #aaa; }
-    .due-badge {
-      display: inline-block;
-      font-size: 0.75rem;
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       margin-top: 3px;
-      color: #007aff;
+      flex-wrap: wrap;
     }
+    .due-badge { font-size: 0.75rem; color: #007aff; }
     .due-badge.today { color: #ff9500; font-weight: 600; }
     .due-badge.overdue { color: #ff3b30; font-weight: 600; }
-    .task-body { cursor: pointer; }
+    .repeat-badge { font-size: 0.75rem; color: #8e8e93; }
     .task-delete {
       background: none;
       border: none;
@@ -186,14 +175,15 @@
       cursor: pointer;
     }
     #add-btn:active { opacity: 0.8; }
-    #date-row {
+    .input-sub-row {
       display: flex;
       align-items: center;
       gap: 8px;
       font-size: 0.85rem;
       color: #666;
+      flex-wrap: wrap;
     }
-    #due-date-input {
+    .sub-input {
       padding: 5px 10px;
       border: 1px solid #e5e5ea;
       border-radius: 8px;
@@ -201,16 +191,16 @@
       color: #1c1c1e;
       background: #f5f5f7;
     }
-    #clear-date-btn {
+    .sub-btn {
       background: none;
       border: none;
       color: #aaa;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
       padding: 2px 4px;
     }
 
-    /* モーダル（ボトムシート） */
+    /* モーダル */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -228,12 +218,7 @@
       flex-direction: column;
       gap: 8px;
     }
-    .modal-title {
-      font-size: 0.8rem;
-      color: #888;
-      text-align: center;
-      padding: 4px 0 6px;
-    }
+    .modal-title { font-size: 0.8rem; color: #888; text-align: center; padding: 4px 0 6px; }
     .modal-action-btn {
       padding: 14px;
       border: none;
@@ -246,7 +231,7 @@
       text-align: center;
     }
     .modal-action-btn.danger { color: #ff3b30; }
-    .modal-action-btn.cancel { color: #1c1c1e; background: #fff; margin-top: 4px; }
+    .modal-action-btn.cancel { color: #1c1c1e; margin-top: 4px; }
     .modal-input {
       padding: 12px 14px;
       border: 1px solid #e5e5ea;
@@ -256,6 +241,25 @@
       background: #fff;
     }
     .modal-input:focus { border-color: #007aff; }
+    .modal-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #666;
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      flex-wrap: wrap;
+    }
+    .modal-row select, .modal-row input[type=date] {
+      padding: 4px 8px;
+      border: 1px solid #e5e5ea;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: #f5f5f7;
+    }
+    .modal-row .sub-btn { font-size: 0.8rem; }
   </style>
 </head>
 <body>
@@ -278,7 +282,7 @@
   </header>
 
   <div id="list-tabs">
-    <button class="list-tab-add" id="add-list-btn" title="リストを追加">＋</button>
+    <button class="list-tab-add" id="add-list-btn">＋</button>
   </div>
 
   <div id="task-list">
@@ -290,10 +294,28 @@
       <input type="text" id="task-input" placeholder="タスクを追加...">
       <button id="add-btn">追加</button>
     </div>
-    <div id="date-row">
-      <span>📅 期限：</span>
-      <input type="date" id="due-date-input">
-      <button id="clear-date-btn" style="display:none">✕ クリア</button>
+    <div class="input-sub-row">
+      <span>📅</span>
+      <input type="date" id="due-date-input" class="sub-input">
+      <button id="clear-date-btn" class="sub-btn" style="display:none">✕</button>
+    </div>
+    <div class="input-sub-row">
+      <span>🔁</span>
+      <select id="repeat-select" class="sub-input">
+        <option value="">繰り返しなし</option>
+        <option value="daily">毎日</option>
+        <option value="weekly">毎週</option>
+        <option value="monthly">毎月</option>
+      </select>
+      <select id="repeat-day-select" class="sub-input" style="display:none">
+        <option value="0">日曜</option>
+        <option value="1">月曜</option>
+        <option value="2">火曜</option>
+        <option value="3">水曜</option>
+        <option value="4">木曜</option>
+        <option value="5">金曜</option>
+        <option value="6">土曜</option>
+      </select>
     </div>
   </div>
 </div>
@@ -303,10 +325,28 @@
   <div class="modal-sheet">
     <div class="modal-title">タスクを編集</div>
     <input type="text" id="task-edit-input" class="modal-input" placeholder="タスク名">
-    <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
-      <span style="font-size:0.85rem;color:#666">📅 期限：</span>
-      <input type="date" id="task-edit-date" style="padding:6px 10px;border:1px solid #e5e5ea;border-radius:8px;font-size:0.85rem;background:#f5f5f7">
-      <button id="task-edit-clear-date" style="background:none;border:none;color:#aaa;font-size:0.85rem;cursor:pointer">✕</button>
+    <div class="modal-row">
+      <span>📅 期限：</span>
+      <input type="date" id="task-edit-date">
+      <button id="task-edit-clear-date" class="sub-btn">✕</button>
+    </div>
+    <div class="modal-row">
+      <span>🔁 繰り返し：</span>
+      <select id="task-edit-repeat">
+        <option value="">なし</option>
+        <option value="daily">毎日</option>
+        <option value="weekly">毎週</option>
+        <option value="monthly">毎月</option>
+      </select>
+      <select id="task-edit-repeat-day" style="display:none">
+        <option value="0">日曜</option>
+        <option value="1">月曜</option>
+        <option value="2">火曜</option>
+        <option value="3">水曜</option>
+        <option value="4">木曜</option>
+        <option value="5">金曜</option>
+        <option value="6">土曜</option>
+      </select>
     </div>
     <button class="modal-action-btn" id="task-edit-ok">保存する</button>
     <button class="modal-action-btn danger" id="task-edit-delete">削除</button>
@@ -346,7 +386,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
+  import { getAuth, signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -371,18 +411,16 @@
   let unsubscribeLists = null;
   let allTasks = [];
   let activeListForModal = null;
+  let activeTaskForEdit = null;
 
-  // リダイレクト後の結果を処理
+  // ---- ログイン ----
   getRedirectResult(auth).catch(err => console.error('redirect error:', err));
 
-  // ---- ログイン・ログアウト ----
   document.getElementById('login-btn').onclick = () => {
     signInWithRedirect(auth, provider).catch(() => {
-      // リダイレクトが使えない環境ではポップアップにフォールバック
       signInWithPopup(auth, provider).catch(err => alert('ログインに失敗しました: ' + err.message));
     });
   };
-
   document.getElementById('logout-btn').onclick = () => {
     if (confirm('ログアウトしますか？')) signOut(auth);
   };
@@ -413,9 +451,7 @@
         addDoc(listsRef, { name: '趣味', createdAt: serverTimestamp() });
         return;
       }
-      if (!currentListId || !lists.find(l => l.id === currentListId)) {
-        currentListId = lists[0].id;
-      }
+      if (!currentListId || !lists.find(l => l.id === currentListId)) currentListId = lists[0].id;
       renderListTabs(lists);
       renderTasks();
     });
@@ -427,19 +463,45 @@
     });
   }
 
+  // ---- 繰り返し ----
+  const REPEAT_LABEL = { daily: '毎日', weekly: '毎週', monthly: '毎月' };
+  const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
+
+  function repeatLabel(repeat) {
+    if (!repeat) return '';
+    if (repeat.type === 'weekly') return `毎週${DAY_NAMES[repeat.day]}曜`;
+    return REPEAT_LABEL[repeat.type] || '';
+  }
+
+  function nextRepeatDate(dueDateStr, repeat) {
+    const base = dueDateStr ? new Date(dueDateStr + 'T00:00:00') : new Date();
+    base.setHours(0, 0, 0, 0);
+    if (repeat.type === 'daily') {
+      base.setDate(base.getDate() + 1);
+    } else if (repeat.type === 'weekly') {
+      do { base.setDate(base.getDate() + 1); } while (base.getDay() !== Number(repeat.day));
+    } else if (repeat.type === 'monthly') {
+      base.setMonth(base.getMonth() + 1);
+    }
+    return base.toISOString().slice(0, 10);
+  }
+
+  function buildRepeat(typeVal, dayVal) {
+    if (!typeVal) return null;
+    if (typeVal === 'weekly') return { type: 'weekly', day: Number(dayVal) };
+    return { type: typeVal };
+  }
+
   // ---- リストタブ ----
   function renderListTabs(lists) {
     const container = document.getElementById('list-tabs');
     container.querySelectorAll('.list-tab').forEach(el => el.remove());
     const addBtn = document.getElementById('add-list-btn');
-
     lists.forEach(list => {
       const tab = document.createElement('button');
       tab.className = 'list-tab' + (list.id === currentListId ? ' active' : '');
       tab.dataset.listId = list.id;
       tab.textContent = list.name;
-
-      // タップでリスト切り替え
       let longPressTimer = null;
       tab.addEventListener('touchstart', () => {
         longPressTimer = setTimeout(() => { longPressTimer = null; showListActionModal(list); }, 600);
@@ -451,28 +513,25 @@
         document.querySelectorAll('.list-tab').forEach(t => t.classList.toggle('active', t.dataset.listId === list.id));
         renderTasks();
       };
-      // PCは右クリック
       tab.oncontextmenu = e => { e.preventDefault(); showListActionModal(list); };
-
       container.insertBefore(tab, addBtn);
     });
   }
 
-  // ---- タスク表示 ----
+  // ---- 期限フォーマット ----
   function formatDueDate(dateStr) {
     if (!dateStr) return null;
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const due = new Date(y, m - 1, d);
+    const due = new Date(dateStr + 'T00:00:00');
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const diff = Math.round((due - today) / 86400000);
-    const days = ['日', '月', '火', '水', '木', '金', '土'];
     if (diff < 0) return { text: `${Math.abs(diff)}日超過`, cls: 'overdue' };
     if (diff === 0) return { text: '今日', cls: 'today' };
     if (diff === 1) return { text: '明日', cls: '' };
-    if (diff < 7) return { text: `${m}/${d}（${days[due.getDay()]}）`, cls: '' };
-    return { text: `${m}/${d}`, cls: '' };
+    if (diff < 7) return { text: `${due.getMonth()+1}/${due.getDate()}（${DAY_NAMES[due.getDay()]}）`, cls: '' };
+    return { text: `${due.getMonth()+1}/${due.getDate()}`, cls: '' };
   }
 
+  // ---- タスク表示 ----
   function sortTasks(tasks) {
     const undone = tasks.filter(t => !t.done).sort((a, b) => {
       if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
@@ -487,12 +546,10 @@
     const container = document.getElementById('task-list');
     const tasks = sortTasks(allTasks.filter(t => t.listId === currentListId));
     container.innerHTML = '';
-
     if (tasks.length === 0) {
       container.innerHTML = '<div class="empty-state">タスクがありません<br>下から追加しよう</div>';
       return;
     }
-
     tasks.forEach(task => {
       const item = document.createElement('div');
       item.className = 'task-item';
@@ -500,24 +557,36 @@
       const check = document.createElement('div');
       check.className = 'task-check' + (task.done ? ' done' : '');
       check.textContent = task.done ? '✓' : '';
-      check.onclick = () => updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: !task.done });
+      check.onclick = () => handleComplete(task);
 
       const body = document.createElement('div');
       body.className = 'task-body';
+      body.onclick = () => showTaskEditModal(task);
 
       const text = document.createElement('div');
       text.className = 'task-text' + (task.done ? ' done' : '');
       text.textContent = task.text;
       body.appendChild(text);
 
-      if (task.dueDate && !task.done) {
-        const info = formatDueDate(task.dueDate);
-        if (info) {
-          const badge = document.createElement('div');
-          badge.className = 'due-badge ' + info.cls;
-          badge.textContent = '📅 ' + info.text;
-          body.appendChild(badge);
+      if (!task.done) {
+        const meta = document.createElement('div');
+        meta.className = 'task-meta';
+        if (task.dueDate) {
+          const info = formatDueDate(task.dueDate);
+          if (info) {
+            const badge = document.createElement('span');
+            badge.className = 'due-badge ' + info.cls;
+            badge.textContent = '📅 ' + info.text;
+            meta.appendChild(badge);
+          }
         }
+        if (task.repeat) {
+          const rb = document.createElement('span');
+          rb.className = 'repeat-badge';
+          rb.textContent = '🔁 ' + repeatLabel(task.repeat);
+          meta.appendChild(rb);
+        }
+        if (meta.children.length > 0) body.appendChild(meta);
       }
 
       const del = document.createElement('button');
@@ -527,44 +596,28 @@
         if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id));
       };
 
-      body.onclick = () => showTaskEditModal(task);
-
       item.append(check, body, del);
       container.appendChild(item);
     });
   }
 
-  // ---- タスク編集モーダル ----
-  let activeTaskForEdit = null;
-
-  function showTaskEditModal(task) {
-    activeTaskForEdit = task;
-    document.getElementById('task-edit-input').value = task.text;
-    document.getElementById('task-edit-date').value = task.dueDate || '';
-    document.getElementById('task-edit-modal').style.display = 'flex';
-    document.getElementById('task-edit-input').focus();
+  // ---- 完了処理（繰り返し対応） ----
+  async function handleComplete(task) {
+    if (!task.done && task.repeat) {
+      const nextDate = nextRepeatDate(task.dueDate, task.repeat);
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: true });
+      await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+        text: task.text,
+        listId: task.listId,
+        done: false,
+        dueDate: nextDate,
+        repeat: task.repeat,
+        createdAt: serverTimestamp()
+      });
+    } else {
+      updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: !task.done });
+    }
   }
-
-  document.getElementById('task-edit-ok').onclick = () => {
-    const text = document.getElementById('task-edit-input').value.trim();
-    if (!text) return;
-    const dueDate = document.getElementById('task-edit-date').value || null;
-    updateDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id), { text, dueDate });
-    document.getElementById('task-edit-modal').style.display = 'none';
-  };
-  document.getElementById('task-edit-delete').onclick = () => {
-    document.getElementById('task-edit-modal').style.display = 'none';
-    if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id));
-  };
-  document.getElementById('task-edit-cancel').onclick = () => {
-    document.getElementById('task-edit-modal').style.display = 'none';
-  };
-  document.getElementById('task-edit-clear-date').onclick = () => {
-    document.getElementById('task-edit-date').value = '';
-  };
-  document.getElementById('task-edit-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('task-edit-ok').click();
-  });
 
   // ---- タスク追加 ----
   async function addTask() {
@@ -572,43 +625,78 @@
     const text = input.value.trim();
     if (!text || !currentListId) return;
     const dueDate = document.getElementById('due-date-input').value || null;
+    const repeatType = document.getElementById('repeat-select').value;
+    const repeatDay = document.getElementById('repeat-day-select').value;
+    const repeat = buildRepeat(repeatType, repeatDay);
     input.value = '';
     await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
-      text, listId: currentListId, done: false, dueDate, createdAt: serverTimestamp()
+      text, listId: currentListId, done: false, dueDate, repeat, createdAt: serverTimestamp()
     });
   }
 
   document.getElementById('add-btn').onclick = addTask;
   document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
 
-  // 日付クリアボタン
   const dueDateInput = document.getElementById('due-date-input');
   const clearDateBtn = document.getElementById('clear-date-btn');
-  dueDateInput.addEventListener('change', () => {
-    clearDateBtn.style.display = dueDateInput.value ? 'inline' : 'none';
+  dueDateInput.addEventListener('change', () => { clearDateBtn.style.display = dueDateInput.value ? 'inline' : 'none'; });
+  clearDateBtn.onclick = () => { dueDateInput.value = ''; clearDateBtn.style.display = 'none'; };
+
+  const repeatSelect = document.getElementById('repeat-select');
+  const repeatDaySelect = document.getElementById('repeat-day-select');
+  repeatSelect.addEventListener('change', () => {
+    repeatDaySelect.style.display = repeatSelect.value === 'weekly' ? 'inline' : 'none';
   });
-  clearDateBtn.onclick = () => {
-    dueDateInput.value = '';
-    clearDateBtn.style.display = 'none';
+
+  // ---- タスク編集モーダル ----
+  function showTaskEditModal(task) {
+    activeTaskForEdit = task;
+    document.getElementById('task-edit-input').value = task.text;
+    document.getElementById('task-edit-date').value = task.dueDate || '';
+    const editRepeat = document.getElementById('task-edit-repeat');
+    const editRepeatDay = document.getElementById('task-edit-repeat-day');
+    editRepeat.value = task.repeat ? task.repeat.type : '';
+    editRepeatDay.value = task.repeat?.day ?? 1;
+    editRepeatDay.style.display = editRepeat.value === 'weekly' ? 'inline' : 'none';
+    document.getElementById('task-edit-modal').style.display = 'flex';
+    document.getElementById('task-edit-input').focus();
+  }
+
+  document.getElementById('task-edit-repeat').addEventListener('change', e => {
+    document.getElementById('task-edit-repeat-day').style.display = e.target.value === 'weekly' ? 'inline' : 'none';
+  });
+  document.getElementById('task-edit-clear-date').onclick = () => { document.getElementById('task-edit-date').value = ''; };
+
+  document.getElementById('task-edit-ok').onclick = () => {
+    const text = document.getElementById('task-edit-input').value.trim();
+    if (!text) return;
+    const dueDate = document.getElementById('task-edit-date').value || null;
+    const repeatType = document.getElementById('task-edit-repeat').value;
+    const repeatDay = document.getElementById('task-edit-repeat-day').value;
+    const repeat = buildRepeat(repeatType, repeatDay);
+    updateDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id), { text, dueDate, repeat });
+    document.getElementById('task-edit-modal').style.display = 'none';
   };
+  document.getElementById('task-edit-delete').onclick = () => {
+    document.getElementById('task-edit-modal').style.display = 'none';
+    if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id));
+  };
+  document.getElementById('task-edit-cancel').onclick = () => { document.getElementById('task-edit-modal').style.display = 'none'; };
+  document.getElementById('task-edit-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('task-edit-ok').click(); });
 
   // ---- リスト追加モーダル ----
   document.getElementById('add-list-btn').onclick = () => {
     document.getElementById('list-add-input').value = '';
     document.getElementById('list-add-modal').style.display = 'flex';
-    document.getElementById('list-add-input').focus();
+    setTimeout(() => document.getElementById('list-add-input').focus(), 100);
   };
   document.getElementById('list-add-ok').onclick = () => {
     const name = document.getElementById('list-add-input').value.trim();
     if (name) addDoc(collection(db, 'users', currentUser.uid, 'lists'), { name, createdAt: serverTimestamp() });
     document.getElementById('list-add-modal').style.display = 'none';
   };
-  document.getElementById('list-add-cancel').onclick = () => {
-    document.getElementById('list-add-modal').style.display = 'none';
-  };
-  document.getElementById('list-add-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('list-add-ok').click();
-  });
+  document.getElementById('list-add-cancel').onclick = () => { document.getElementById('list-add-modal').style.display = 'none'; };
+  document.getElementById('list-add-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('list-add-ok').click(); });
 
   // ---- リスト操作モーダル ----
   function showListActionModal(list) {
@@ -616,32 +704,23 @@
     document.getElementById('list-action-title').textContent = `「${list.name}」`;
     document.getElementById('list-action-modal').style.display = 'flex';
   }
-  document.getElementById('list-cancel-btn').onclick = () => {
-    document.getElementById('list-action-modal').style.display = 'none';
-  };
+  document.getElementById('list-cancel-btn').onclick = () => { document.getElementById('list-action-modal').style.display = 'none'; };
   document.getElementById('list-action-modal').addEventListener('click', e => {
-    if (e.target === document.getElementById('list-action-modal'))
-      document.getElementById('list-action-modal').style.display = 'none';
+    if (e.target === document.getElementById('list-action-modal')) document.getElementById('list-action-modal').style.display = 'none';
   });
-
   document.getElementById('list-rename-btn').onclick = () => {
     document.getElementById('list-action-modal').style.display = 'none';
     document.getElementById('list-rename-input').value = activeListForModal.name;
     document.getElementById('list-rename-modal').style.display = 'flex';
-    document.getElementById('list-rename-input').focus();
+    setTimeout(() => document.getElementById('list-rename-input').focus(), 100);
   };
   document.getElementById('list-rename-ok').onclick = () => {
     const name = document.getElementById('list-rename-input').value.trim();
     if (name) updateDoc(doc(db, 'users', currentUser.uid, 'lists', activeListForModal.id), { name });
     document.getElementById('list-rename-modal').style.display = 'none';
   };
-  document.getElementById('list-rename-cancel').onclick = () => {
-    document.getElementById('list-rename-modal').style.display = 'none';
-  };
-  document.getElementById('list-rename-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('list-rename-ok').click();
-  });
-
+  document.getElementById('list-rename-cancel').onclick = () => { document.getElementById('list-rename-modal').style.display = 'none'; };
+  document.getElementById('list-rename-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('list-rename-ok').click(); });
   document.getElementById('list-delete-btn').onclick = () => {
     document.getElementById('list-action-modal').style.display = 'none';
     if (confirm(`「${activeListForModal.name}」を削除しますか？`))
