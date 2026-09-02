@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6b6b"/>
+      <stop offset="100%" stop-color="#ffa94d"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#g)"/>
+  <!-- チェックリスト本体 -->
+  <rect x="148" y="120" width="216" height="272" rx="18" fill="white" opacity="0.95"/>
+  <!-- 上部クリップ部分 -->
+  <rect x="210" y="104" width="92" height="36" rx="10" fill="url(#g)"/>
+  <!-- チェック行1 -->
+  <rect x="176" y="178" width="22" height="22" rx="6" fill="#ff6b6b" opacity="0.9"/>
+  <rect x="210" y="183" width="110" height="12" rx="6" fill="#ffd0c0"/>
+  <!-- チェック行2（チェック済み） -->
+  <rect x="176" y="220" width="22" height="22" rx="6" fill="#ff6b6b" opacity="0.9"/>
+  <text x="182" y="236" font-size="18" fill="white" font-weight="bold" font-family="sans-serif">✓</text>
+  <rect x="210" y="225" width="90" height="12" rx="6" fill="#ffd0c0" opacity="0.5"/>
+  <!-- チェック行3 -->
+  <rect x="176" y="262" width="22" height="22" rx="6" fill="#ffd0c0" opacity="0.6"/>
+  <rect x="210" y="267" width="130" height="12" rx="6" fill="#ffd0c0"/>
+  <!-- チェック行4 -->
+  <rect x="176" y="304" width="22" height="22" rx="6" fill="#ffd0c0" opacity="0.6"/>
+  <rect x="210" y="309" width="100" height="12" rx="6" fill="#ffd0c0"/>
+</svg>

@@ -4,12 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>My ToDo</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f6f7f9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="My ToDo">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --canvas: #f6f7f9;
+      --surface-1: #ffffff;
+      --surface-2: #f1f3f5;
+      --surface-3: #e9ecef;
+      --hairline: #e6e8eb;
+      --hairline-strong: #d5d8dc;
+      --ink: #1c1d21;
+      --ink-muted: #3d4047;
+      --ink-subtle: #6b7280;
+      --ink-tertiary: #9ca3af;
+      --primary: #5e6ad2;
+      --primary-hover: #4f5ac0;
+      --success: #1f9d3d;
+      --danger: #e5484d;
+      color-scheme: light;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f7;
-      color: #1c1c1e;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--canvas);
+      color: var(--ink);
+      letter-spacing: -0.01em;
       height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -22,21 +49,24 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
+      gap: 20px;
+      background: var(--canvas);
+      color: var(--ink);
     }
-    #login-screen h1 { font-size: 2rem; }
-    #login-screen p { color: #666; }
+    #login-screen h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.04em; }
+    #login-screen p { color: var(--ink-subtle); font-size: 0.95rem; }
     .btn-google {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 24px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      font-size: 1rem;
+      padding: 12px 22px;
+      background: var(--surface-1);
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
       cursor: pointer;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      color: var(--ink);
     }
 
     /* メイン画面 */
@@ -44,161 +74,403 @@
     #app.active { display: flex; }
 
     header {
-      background: #fff;
-      padding: 12px 16px;
+      background: var(--canvas);
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #e5e5ea;
       flex-shrink: 0;
+      border-bottom: 1px solid var(--hairline);
     }
-    header h1 { font-size: 1.1rem; font-weight: 700; }
-    .btn-logout {
-      background: none;
-      border: none;
-      color: #ff3b30;
-      font-size: 0.9rem;
+    header h1 { font-size: 1.05rem; font-weight: 600; color: var(--ink); letter-spacing: -0.03em; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .btn-header, .btn-logout {
+      background: var(--surface-1);
+      border: 1px solid var(--hairline);
+      color: var(--ink-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
       cursor: pointer;
+      padding: 5px 12px;
+      border-radius: 8px;
+    }
+    .btn-header.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* タブ2段 */
+    #tab-area { flex-shrink: 0; background: var(--canvas); border-bottom: 1px solid var(--hairline); }
+
+    /* 上段：すべて・今日・明日 */
+    #special-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 10px 12px 6px;
+    }
+    .special-tab {
+      flex: 1;
+      padding: 7px 0;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--surface-1);
+      color: var(--ink-subtle);
+      transition: all 0.12s;
+    }
+    .special-tab.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
     }
 
-    /* リストタブ */
+    /* 下段：リストタブ */
     #list-tabs {
       display: flex;
       overflow-x: auto;
-      background: #fff;
-      border-bottom: 1px solid #e5e5ea;
-      flex-shrink: 0;
       scrollbar-width: none;
+      padding: 6px 8px 8px;
+      gap: 6px;
     }
     #list-tabs::-webkit-scrollbar { display: none; }
     .list-tab {
-      padding: 10px 16px;
-      border: none;
-      background: none;
-      font-size: 0.9rem;
+      padding: 5px 13px;
+      border: 1px solid var(--hairline);
+      background: var(--surface-1);
+      color: var(--ink-subtle);
+      font-size: 0.83rem;
       cursor: pointer;
       white-space: nowrap;
-      border-bottom: 2px solid transparent;
-      color: #666;
       flex-shrink: 0;
+      font-weight: 500;
+      border-radius: 9999px;
+      transition: all 0.12s;
     }
-    .list-tab.active { border-bottom-color: #007aff; color: #007aff; font-weight: 600; }
     .list-tab-add {
-      padding: 10px 14px;
-      border: none;
-      background: none;
-      font-size: 1.3rem;
+      padding: 5px 11px;
+      border: 1px solid var(--hairline);
+      background: var(--surface-1);
+      font-size: 1rem;
       cursor: pointer;
-      color: #007aff;
+      color: var(--ink-subtle);
       flex-shrink: 0;
+      border-radius: 9999px;
     }
 
     /* タスク一覧 */
-    #task-list { flex: 1; overflow-y: auto; }
-    .empty-state { text-align: center; padding: 60px 20px; color: #aaa; line-height: 1.8; }
+    #task-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--ink-tertiary); line-height: 2; font-size: 0.9rem; }
+    .group-header {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink-subtle);
+      letter-spacing: 0.02em;
+      padding: 14px 4px 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .group-toggle { font-size: 0.6rem; transition: transform 0.2s; display: inline-block; width: 10px; }
+    .group-toggle.open { transform: rotate(90deg); }
+    .group-header:first-child { padding-top: 4px; }
+
+    /* 通常タスク */
     .task-item {
       display: flex;
       align-items: center;
-      padding: 12px 16px;
-      background: #fff;
-      border-bottom: 1px solid #f0f0f0;
+      padding: 12px 14px;
+      background: var(--surface-1);
+      border-radius: 12px;
+      border: 1px solid var(--hairline);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
       gap: 12px;
+      touch-action: pan-y;
+      transition: transform 0.2s, opacity 0.2s, border-color 0.12s;
+    }
+    .task-item.swiping { transition: none; }
+    .task-item.subtask {
+      padding-left: 14px;
+      background: var(--surface-2);
+      border-radius: 10px;
+      border: 1px solid var(--hairline);
+      margin-left: 16px;
     }
     .task-check {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      border: 2px solid #c7c7cc;
+      border: 2px solid var(--hairline-strong);
       cursor: pointer;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.85rem;
-      transition: all 0.15s;
+      font-size: 0.8rem;
+      transition: all 0.12s;
     }
-    .task-check.done { background: #34c759; border-color: #34c759; color: #fff; }
+    .task-check.done { background: var(--success); border-color: var(--success); color: #fff; }
     .task-body { flex: 1; min-width: 0; cursor: pointer; }
-    .task-text { font-size: 1rem; line-height: 1.4; word-break: break-all; }
-    .task-text.done { text-decoration: line-through; color: #aaa; }
-    .task-meta {
+    .task-text { font-size: 0.92rem; font-weight: 450; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-text.done { text-decoration: line-through; color: var(--ink-tertiary); }
+    .task-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+    .due-badge {
+      font-size: 0.7rem;
+      color: var(--ink-muted);
+      background: var(--surface-3);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 500;
+    }
+    .due-badge.today { color: #e8a13c; }
+    .due-badge.overdue { color: var(--danger); }
+    .repeat-badge {
+      font-size: 0.7rem;
+      color: var(--ink-subtle);
+      background: var(--surface-3);
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .elapsed-badge { color: var(--ink-muted); background: var(--surface-3); font-weight: 500; }
+    .elapsed-badge.over { color: var(--danger); background: rgba(229,72,77,0.12); font-weight: 600; }
+
+    /* 完了の取り消しトースト */
+    #undo-toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 96px;
+      background: #1c1d21;
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-top: 3px;
-      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.85rem;
+      z-index: 200;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      white-space: nowrap;
     }
-    .due-badge { font-size: 0.75rem; color: #007aff; }
-    .due-badge.today { color: #ff9500; font-weight: 600; }
-    .due-badge.overdue { color: #ff3b30; font-weight: 600; }
-    .repeat-badge { font-size: 0.75rem; color: #8e8e93; }
+    #undo-toast button {
+      background: none;
+      border: none;
+      color: #aab2ff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 0;
+    }
+    .task-item.elapsed-task {
+      background: var(--surface-2);
+      border-color: var(--hairline);
+    }
+    .task-item.elapsed-task .task-check { border-color: var(--hairline-strong); }
+    .task-item.elapsed-task .task-check.done { background: var(--ink-tertiary); border-color: var(--ink-tertiary); }
+    .task-item.elapsed-task .task-text { color: var(--ink); }
+    .task-item.elapsed-task .task-text.done { color: var(--ink-tertiary); font-weight: 300; }
+    .drag-handle {
+      cursor: grab;
+      color: var(--ink-tertiary);
+      font-size: 0.85rem;
+      padding: 0 1px;
+      flex-shrink: 0;
+      line-height: 1;
+      touch-action: none;
+      letter-spacing: -1px;
+    }
+    .task-item.dragging { opacity: 0.35; }
+    .task-item.drag-over-top { border-top: 2px solid var(--primary) !important; }
+    .drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.9;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    }
+    .task-rollover {
+      background: none;
+      border: none;
+      color: var(--ink-subtle);
+      font-size: 0.72rem;
+      cursor: pointer;
+      padding: 4px 2px;
+      line-height: 1;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .reorder-controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; flex-shrink: 0; }
+    .reorder-btn-mini {
+      background: var(--surface-2);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 8px;
+      color: var(--ink-subtle);
+      font-size: 0.72rem;
+      line-height: 1;
+      width: 26px;
+      height: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .reorder-btn-mini:active { background: var(--primary); color: #fff; border-color: var(--primary); }
     .task-delete {
       background: none;
       border: none;
-      color: #c7c7cc;
-      font-size: 1.3rem;
+      color: var(--ink-tertiary);
+      font-size: 1.2rem;
       cursor: pointer;
       padding: 4px;
       line-height: 1;
       flex-shrink: 0;
     }
 
+    /* プロジェクト */
+    .project-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--surface-2);
+      border-radius: 12px;
+      border: 1px solid var(--hairline-strong);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .project-header.done-project { background: var(--surface-1); border-color: var(--hairline); box-shadow: none; }
+    .project-toggle {
+      font-size: 0.65rem;
+      color: var(--ink-subtle);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      width: 14px;
+    }
+    .project-toggle.open { transform: rotate(90deg); }
+    .project-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .project-body { flex: 1; min-width: 0; }
+    .project-title { font-size: 0.95rem; font-weight: 600; word-break: break-all; line-height: 1.4; color: var(--ink); }
+    .project-title.done { text-decoration: line-through; color: var(--ink-tertiary); font-weight: 400; }
+    .project-meta { display: flex; align-items: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+    .project-progress {
+      font-size: 0.7rem;
+      color: var(--primary-hover);
+      font-weight: 500;
+    }
+    .project-header.done-project .project-progress { color: var(--ink-tertiary); }
+    .project-delete {
+      background: none;
+      border: none;
+      color: var(--ink-tertiary);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    /* サブタスク追加行 */
+    .subtask-add-row {
+      margin-left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subtask-add-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      outline: none;
+      background: var(--surface-2);
+      color: var(--ink);
+    }
+    .subtask-add-input:focus { border-color: var(--primary); }
+    .subtask-add-btn {
+      padding: 8px 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
     /* 入力エリア */
     #input-area {
-      background: #fff;
-      border-top: 1px solid #e5e5ea;
+      background: var(--canvas);
+      border-top: 1px solid var(--hairline);
       flex-shrink: 0;
-      padding: 10px 12px;
+      padding: 12px 14px 24px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
     #input-row { display: flex; gap: 8px; }
+    #date-group { display: inline-flex; align-items: center; gap: 8px; }
     #task-input {
       flex: 1;
       padding: 10px 14px;
-      border: 1px solid #e5e5ea;
-      border-radius: 10px;
-      font-size: 1rem;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      font-size: 0.95rem;
       outline: none;
-      background: #f5f5f7;
+      background: var(--surface-1);
+      color: var(--ink);
     }
-    #task-input:focus { border-color: #007aff; background: #fff; }
+    #task-input:focus { border-color: var(--primary); }
     #add-btn {
       padding: 10px 18px;
-      background: #007aff;
+      background: var(--primary);
       color: #fff;
       border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
       cursor: pointer;
     }
-    #add-btn:active { opacity: 0.8; }
+    #add-btn:active { background: var(--primary-hover); }
     .input-sub-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.85rem;
-      color: #666;
+      font-size: 0.82rem;
+      color: var(--ink-subtle);
       flex-wrap: wrap;
     }
     .sub-input {
       padding: 5px 10px;
-      border: 1px solid #e5e5ea;
+      border: 1px solid var(--hairline);
       border-radius: 8px;
-      font-size: 0.85rem;
-      color: #1c1c1e;
-      background: #f5f5f7;
+      font-size: 0.82rem;
+      color: var(--ink);
+      background: var(--surface-1);
     }
     .sub-btn {
       background: none;
       border: none;
-      color: #aaa;
+      color: var(--ink-tertiary);
       font-size: 0.85rem;
       cursor: pointer;
       padding: 2px 4px;
     }
+    .project-inline-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      opacity: 0.3;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .project-inline-label:has(#is-project-check:checked) { opacity: 1; }
+    .project-inline-label:has(#is-appointment-check:checked) { opacity: 1; }
+    #is-project-check, #is-appointment-check { display: none; }
 
     /* モーダル */
     .modal-overlay {
@@ -210,56 +482,73 @@
       z-index: 100;
     }
     .modal-sheet {
-      background: #f5f5f7;
+      background: var(--surface-1);
+      border-top: 1px solid var(--hairline);
       border-radius: 16px 16px 0 0;
       width: 100%;
-      padding: 12px 16px 28px;
+      padding: 12px 16px 32px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    .modal-title { font-size: 0.8rem; color: #888; text-align: center; padding: 4px 0 6px; }
+    .modal-title { font-size: 0.72rem; color: var(--ink-subtle); text-align: center; padding: 4px 0 8px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
     .modal-action-btn {
       padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1rem;
+      border: 1px solid var(--hairline);
+      border-radius: 10px;
+      font-size: 0.95rem;
       cursor: pointer;
-      background: #fff;
-      color: #007aff;
+      background: var(--surface-2);
+      color: var(--primary-hover);
       font-weight: 500;
       text-align: center;
     }
-    .modal-action-btn.danger { color: #ff3b30; }
-    .modal-action-btn.cancel { color: #1c1c1e; margin-top: 4px; }
+    .modal-action-btn.danger { color: var(--danger); }
+    .modal-action-btn.cancel { color: var(--ink-subtle); margin-top: 4px; background: transparent; border-color: transparent; }
     .modal-input {
       padding: 12px 14px;
-      border: 1px solid #e5e5ea;
-      border-radius: 10px;
-      font-size: 1rem;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      font-size: 0.95rem;
       outline: none;
-      background: #fff;
+      background: var(--surface-2);
+      color: var(--ink);
     }
-    .modal-input:focus { border-color: #007aff; }
+    .modal-input:focus { border-color: var(--primary); }
     .modal-row {
       display: flex;
       align-items: center;
       gap: 8px;
       font-size: 0.85rem;
-      color: #666;
-      background: #fff;
-      border-radius: 10px;
-      padding: 10px 14px;
+      color: var(--ink-muted);
+      background: var(--surface-2);
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      padding: 11px 14px;
       flex-wrap: wrap;
     }
     .modal-row select, .modal-row input[type=date] {
       padding: 4px 8px;
-      border: 1px solid #e5e5ea;
-      border-radius: 8px;
+      border: 1px solid var(--hairline);
+      border-radius: 6px;
       font-size: 0.85rem;
-      background: #f5f5f7;
+      background: var(--surface-3);
+      color: var(--ink);
     }
     .modal-row .sub-btn { font-size: 0.8rem; }
+    .modal-move-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .modal-move-row .modal-move-btn { flex: 1 1 calc(50% - 4px); }
+    .modal-move-btn {
+      flex: 1;
+      padding: 13px;
+      border: 1px solid var(--hairline);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--surface-2);
+      color: var(--ink-muted);
+    }
   </style>
 </head>
 <body>
@@ -278,11 +567,23 @@
 <div id="app">
   <header>
     <h1>My ToDo</h1>
-    <button class="btn-logout" id="logout-btn">ログアウト</button>
+    <div class="header-actions">
+      <button class="btn-header" id="reorder-btn" title="並べ替えモード">並べ替え</button>
+      <button class="btn-header" id="toggle-done-btn" title="完了の表示切替">完了を隠す</button>
+      <button class="btn-logout" id="logout-btn">ログアウト</button>
+    </div>
   </header>
 
-  <div id="list-tabs">
-    <button class="list-tab-add" id="add-list-btn">＋</button>
+  <div id="tab-area">
+    <div id="special-tabs">
+      <button class="special-tab" data-id="__today__">今日</button>
+      <button class="special-tab" data-id="__tomorrow__">明日</button>
+      <button class="special-tab" data-id="__dayafter__">明後日</button>
+      <button class="special-tab" data-id="__all__">すべて</button>
+    </div>
+    <div id="list-tabs">
+      <button class="list-tab-add" id="add-list-btn">＋</button>
+    </div>
   </div>
 
   <div id="task-list">
@@ -292,20 +593,35 @@
   <div id="input-area">
     <div id="input-row">
       <input type="text" id="task-input" placeholder="タスクを追加...">
+      <label class="project-inline-label">
+        <input type="checkbox" id="is-project-check">
+        <span>📁</span>
+      </label>
+      <label class="project-inline-label">
+        <input type="checkbox" id="is-appointment-check">
+        <span>📌</span>
+      </label>
       <button id="add-btn">追加</button>
     </div>
-    <div class="input-sub-row">
-      <span>📅</span>
-      <input type="date" id="due-date-input" class="sub-input">
-      <button id="clear-date-btn" class="sub-btn" style="display:none">✕</button>
+    <div class="input-sub-row" id="input-list-row" style="display:none">
+      <span>📂</span>
+      <select id="input-list-select" class="sub-input"></select>
     </div>
     <div class="input-sub-row">
+      <span id="date-group">
+        <span>📅</span>
+        <input type="date" id="due-date-input" class="sub-input">
+        <button id="clear-date-btn" class="sub-btn" style="display:none">✕</button>
+      </span>
       <span>🔁</span>
       <select id="repeat-select" class="sub-input">
         <option value="">繰り返しなし</option>
         <option value="daily">毎日</option>
+        <option value="weekdays">平日（月〜金）</option>
+        <option value="weekends">土日（土・日）</option>
         <option value="weekly">毎週</option>
         <option value="monthly">毎月</option>
+        <option value="elapsed">経過日数を記録（散髪・洗濯など）</option>
       </select>
       <select id="repeat-day-select" class="sub-input" style="display:none">
         <option value="0">日曜</option>
@@ -316,6 +632,10 @@
         <option value="5">金曜</option>
         <option value="6">土曜</option>
       </select>
+      <input type="number" id="elapsed-goal-input" class="sub-input" min="1" placeholder="目安日数" style="display:none;width:84px">
+      <label id="elapsed-hide-label" style="display:none;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" id="elapsed-hide-check">目安まで隠す
+      </label>
     </div>
   </div>
 </div>
@@ -325,18 +645,29 @@
   <div class="modal-sheet">
     <div class="modal-title">タスクを編集</div>
     <input type="text" id="task-edit-input" class="modal-input" placeholder="タスク名">
-    <div class="modal-row">
+    <div class="modal-row" id="task-edit-list-row">
+      <span>📂 リスト：</span>
+      <select id="task-edit-list" class="sub-input"></select>
+    </div>
+    <div class="modal-row" id="task-edit-location-row" style="display:none">
+      <span>📂 場所：</span>
+      <select id="task-edit-location" class="sub-input"></select>
+    </div>
+    <div class="modal-row" id="task-edit-date-row">
       <span>📅 期限：</span>
       <input type="date" id="task-edit-date">
       <button id="task-edit-clear-date" class="sub-btn">✕</button>
     </div>
-    <div class="modal-row">
+    <div class="modal-row" id="task-edit-repeat-row">
       <span>🔁 繰り返し：</span>
       <select id="task-edit-repeat">
         <option value="">なし</option>
         <option value="daily">毎日</option>
+        <option value="weekdays">平日（月〜金）</option>
+        <option value="weekends">土日（土・日）</option>
         <option value="weekly">毎週</option>
         <option value="monthly">毎月</option>
+        <option value="elapsed">経過日数を記録（散髪・洗濯など）</option>
       </select>
       <select id="task-edit-repeat-day" style="display:none">
         <option value="0">日曜</option>
@@ -347,8 +678,29 @@
         <option value="5">金曜</option>
         <option value="6">土曜</option>
       </select>
+      <input type="number" id="task-edit-elapsed-goal" class="sub-input" min="1" placeholder="目安日数" style="display:none;width:84px">
+      <label id="task-edit-elapsed-hide-label" style="display:none;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" id="task-edit-elapsed-hide">目安まで隠す
+      </label>
     </div>
+    <div class="modal-row" id="task-edit-lastdone-row" style="display:none">
+      <span>⏱ 最後にやった日：</span>
+      <input type="date" id="task-edit-lastdone">
+      <button id="task-edit-clear-lastdone" class="sub-btn">✕</button>
+    </div>
+    <label class="modal-row" id="task-edit-appointment-row" style="cursor:pointer;justify-content:space-between">
+      <span>📌 アポイント（予定）にする</span>
+      <input type="checkbox" id="task-edit-appointment" style="width:20px;height:20px">
+    </label>
     <button class="modal-action-btn" id="task-edit-ok">保存する</button>
+    <div class="modal-move-row">
+      <button class="modal-move-btn" id="task-move-top">⏫ 一番上へ</button>
+      <button class="modal-move-btn" id="task-move-up">↑ 上へ</button>
+      <button class="modal-move-btn" id="task-move-down">↓ 下へ</button>
+      <button class="modal-move-btn" id="task-move-bottom">⏬ 一番下へ</button>
+    </div>
+    <button class="modal-action-btn" id="task-edit-to-project" style="color:#ff9500">📁 プロジェクトに変換</button>
+    <button class="modal-action-btn" id="task-edit-duplicate" style="display:none">📋 このプロジェクトを複製</button>
     <button class="modal-action-btn danger" id="task-edit-delete">削除</button>
     <button class="modal-action-btn cancel" id="task-edit-cancel">キャンセル</button>
   </div>
@@ -358,6 +710,7 @@
 <div id="list-action-modal" class="modal-overlay" style="display:none">
   <div class="modal-sheet">
     <div class="modal-title" id="list-action-title"></div>
+    <div id="list-color-swatches" style="display:flex;flex-wrap:wrap;gap:10px;padding:8px 4px 12px;justify-content:center"></div>
     <button class="modal-action-btn" id="list-rename-btn">名前を変更</button>
     <button class="modal-action-btn danger" id="list-delete-btn">削除</button>
     <button class="modal-action-btn cancel" id="list-cancel-btn">キャンセル</button>
@@ -384,16 +737,21 @@
   </div>
 </div>
 
+<div id="undo-toast" style="display:none">
+  <span id="undo-msg"></span>
+  <button id="undo-btn">元に戻す</button>
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
+  import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAwY2Lvq4SVID92r2iWA1J7Xpbl3xFQsBA",
-    authDomain: "myohondriver.firebaseapp.com",
+    authDomain: "myohondriver.web.app",
     projectId: "myohondriver",
     storageBucket: "myohondriver.firebasestorage.app",
     messagingSenderId: "542945453791",
@@ -412,22 +770,151 @@
   let allTasks = [];
   let activeListForModal = null;
   let activeTaskForEdit = null;
+  let expandedProjects = new Set();
+  let allLists = [];
+  let hideCompleted = localStorage.getItem('hideCompleted') === '1';
+  let reorderMode = false;
+  let collapsedGroups = new Set();
+  let dragSrcId = null;
+  let touchDragId = null;
+  let touchGhost = null;
+
+  // ---- 完了の取り消しトースト ----
+  let undoAction = null, undoTimer = null;
+  function showUndo(msg, action) {
+    undoAction = action;
+    document.getElementById('undo-msg').textContent = msg;
+    document.getElementById('undo-toast').style.display = 'flex';
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(hideUndo, 6000);
+  }
+  function hideUndo() {
+    document.getElementById('undo-toast').style.display = 'none';
+    undoAction = null;
+  }
+  document.getElementById('undo-btn').onclick = async () => {
+    const action = undoAction;
+    hideUndo();
+    if (action) await action();
+  };
 
   // ---- ログイン ----
-  // iOSはpopupがSafariのITPでブロックされるのでredirectを使う
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   getRedirectResult(auth).catch(err => console.error('redirect error:', err));
 
   document.getElementById('login-btn').onclick = () => {
-    if (isIOS) {
-      signInWithRedirect(auth, provider);
-    } else {
-      signInWithPopup(auth, provider).catch(err => alert('ログインに失敗しました: ' + err.message));
-    }
+    signInWithRedirect(auth, provider).catch(err => alert('ログインに失敗しました: ' + err.message));
   };
   document.getElementById('logout-btn').onclick = () => {
     if (confirm('ログアウトしますか？')) signOut(auth);
   };
+
+  // iOS用 apple-touch-icon を動的生成
+  (function() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 180;
+    const ctx = c.getContext('2d');
+    const r = 38;
+    ctx.beginPath();
+    ctx.moveTo(r, 0); ctx.lineTo(180 - r, 0);
+    ctx.quadraticCurveTo(180, 0, 180, r);
+    ctx.lineTo(180, 180 - r);
+    ctx.quadraticCurveTo(180, 180, 180 - r, 180);
+    ctx.lineTo(r, 180);
+    ctx.quadraticCurveTo(0, 180, 0, 180 - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    const g = ctx.createLinearGradient(0, 0, 180, 180);
+    g.addColorStop(0, '#ff6b6b'); g.addColorStop(1, '#ffa94d');
+    ctx.fillStyle = g; ctx.fill();
+    // 用紙
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.beginPath(); ctx.roundRect(44, 36, 92, 108, 7); ctx.fill();
+    // クリップ
+    ctx.fillStyle = '#ff8080';
+    ctx.beginPath(); ctx.roundRect(68, 30, 44, 16, 5); ctx.fill();
+    // チェック行
+    [[0,'#ff6b6b',true],[1,'#ffb0a0',false],[2,'#ffb0a0',false]].forEach(([i, col, checked]) => {
+      const y = 66 + i * 26;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.roundRect(54, y, 12, 12, 3); ctx.fill();
+      if (checked) {
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(57, y+6); ctx.lineTo(60, y+9); ctx.lineTo(65, y+3); ctx.stroke();
+      }
+      ctx.fillStyle = i === 1 ? 'rgba(255,180,160,0.5)' : '#ffd0c0';
+      ctx.beginPath(); ctx.roundRect(72, y+3, [52,38,60][i], 6, 3); ctx.fill();
+    });
+    const link = document.createElement('link');
+    link.rel = 'apple-touch-icon';
+    link.href = c.toDataURL();
+    document.head.appendChild(link);
+  })();
+
+  // 日付が変わったら表示と掃除をやり直す（開きっぱなしのPWA対策）
+  let lastSeenDay = todayStr();
+  function checkDayChange() {
+    if (todayStr() === lastSeenDay) return;
+    lastSeenDay = todayStr();
+    if (!currentUser) return;
+    cleanupOldCompleted();
+    renderListTabs(allLists);
+    renderTasks();
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDayChange(); });
+  setInterval(checkDayChange, 60000);
+
+  // 特別タブのクリック
+  document.querySelectorAll('.special-tab').forEach(btn => {
+    btn.onclick = () => {
+      currentListId = btn.dataset.id;
+      renderListTabs(allLists);
+      renderTasks();
+    };
+  });
+
+  // 完了タスクの表示切替
+  const toggleDoneBtn = document.getElementById('toggle-done-btn');
+  function updateToggleDoneBtn() {
+    toggleDoneBtn.classList.toggle('active', hideCompleted);
+    toggleDoneBtn.textContent = hideCompleted ? '完了を表示' : '完了を隠す';
+  }
+  updateToggleDoneBtn();
+  toggleDoneBtn.onclick = () => {
+    hideCompleted = !hideCompleted;
+    localStorage.setItem('hideCompleted', hideCompleted ? '1' : '0');
+    updateToggleDoneBtn();
+    renderTasks();
+  };
+
+  const reorderBtn = document.getElementById('reorder-btn');
+  reorderBtn.onclick = () => {
+    reorderMode = !reorderMode;
+    reorderBtn.classList.toggle('active', reorderMode);
+    reorderBtn.textContent = reorderMode ? '並べ替え終了' : '並べ替え';
+    renderTasks();
+  };
+
+  // 並べ替えモード用の ▲▼ ボタン（画面内で順番が動くのが見える）
+  function makeReorderControls(taskId) {
+    const box = document.createElement('div');
+    box.className = 'reorder-controls';
+    const mkBtn = (label, title, dir) => {
+      const b = document.createElement('button');
+      b.className = 'reorder-btn-mini';
+      b.textContent = label;
+      b.title = title;
+      b.onclick = e => { e.stopPropagation(); moveTask(taskId, dir); };
+      return b;
+    };
+    box.append(
+      mkBtn('⏫', '一番上へ', 'top'),
+      mkBtn('▲', '上へ', 'up'),
+      mkBtn('▼', '下へ', 'down'),
+      mkBtn('⏬', '一番下へ', 'bottom')
+    );
+    return box;
+  }
 
   onAuthStateChanged(auth, user => {
     currentUser = user;
@@ -450,26 +937,72 @@
     const listsRef = collection(db, 'users', currentUser.uid, 'lists');
     unsubscribeLists = onSnapshot(query(listsRef, orderBy('createdAt')), snapshot => {
       const lists = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      allLists = lists;
       if (lists.length === 0) {
         addDoc(listsRef, { name: '仕事', createdAt: serverTimestamp() });
         addDoc(listsRef, { name: '趣味', createdAt: serverTimestamp() });
+        addDoc(listsRef, { name: '未分類', createdAt: serverTimestamp() });
         return;
       }
-      if (!currentListId || !lists.find(l => l.id === currentListId)) currentListId = lists[0].id;
+      // 「未分類」がなければ追加
+      if (!lists.find(l => l.name === '未分類')) {
+        addDoc(listsRef, { name: '未分類', createdAt: serverTimestamp() });
+      }
+      const specialIds = ['__all__', '__today__', '__tomorrow__', '__dayafter__'];
+      if (!currentListId || (!specialIds.includes(currentListId) && !lists.find(l => l.id === currentListId))) {
+        currentListId = '__today__';
+      }
       renderListTabs(lists);
       renderTasks();
     });
 
     const tasksRef = collection(db, 'users', currentUser.uid, 'tasks');
+    let cleanedUp = false;
     unsubscribeTasks = onSnapshot(query(tasksRef, orderBy('createdAt')), snapshot => {
       allTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       renderTasks();
+      // 起動後1回だけ、古い完了タスクを掃除
+      if (!cleanedUp) { cleanedUp = true; cleanupOldCompleted(); }
     });
   }
 
   // ---- 繰り返し ----
-  const REPEAT_LABEL = { daily: '毎日', weekly: '毎週', monthly: '毎月' };
+  const REPEAT_LABEL = { daily: '毎日', weekdays: '平日', weekends: '土日', weekly: '毎週', monthly: '毎月', elapsed: '経過記録' };
   const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
+
+  // ---- 日付ヘルパー（ローカルタイムでYYYY-MM-DDを返す。toISOStringはUTCになり深夜にズレるため使わない） ----
+  function toDateStr(dateObj) {
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  function todayStr() {
+    return toDateStr(new Date());
+  }
+  function tomorrowStr() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return toDateStr(d);
+  }
+  function dayAfterStr() {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return toDateStr(d);
+  }
+
+  // ---- リストごとの色 ----
+  const LIST_COLORS = ['#ff6b6b', '#ff9f43', '#f7b731', '#10b981', '#3b9bff', '#a55eea', '#ff6bcb', '#38bdf8', '#fb923c', '#84cc16', '#14b8a6', '#e879f9'];
+  function listColor(listId) {
+    const list = allLists.find(l => l.id === listId);
+    if (list?.color) return list.color;
+    const idx = allLists.findIndex(l => l.id === listId);
+    return idx >= 0 ? LIST_COLORS[idx % LIST_COLORS.length] : '#ff9500';
+  }
+  function hexA(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+  }
 
   function repeatLabel(repeat) {
     if (!repeat) return '';
@@ -482,30 +1015,51 @@
     base.setHours(0, 0, 0, 0);
     if (repeat.type === 'daily') {
       base.setDate(base.getDate() + 1);
+    } else if (repeat.type === 'weekdays') {
+      do { base.setDate(base.getDate() + 1); } while (base.getDay() === 0 || base.getDay() === 6);
+    } else if (repeat.type === 'weekends') {
+      do { base.setDate(base.getDate() + 1); } while (base.getDay() !== 0 && base.getDay() !== 6);
     } else if (repeat.type === 'weekly') {
       do { base.setDate(base.getDate() + 1); } while (base.getDay() !== Number(repeat.day));
     } else if (repeat.type === 'monthly') {
       base.setMonth(base.getMonth() + 1);
     }
-    return base.toISOString().slice(0, 10);
+    return toDateStr(base);
   }
 
-  function buildRepeat(typeVal, dayVal) {
+  function buildRepeat(typeVal, dayVal, goalVal, hideVal) {
     if (!typeVal) return null;
     if (typeVal === 'weekly') return { type: 'weekly', day: Number(dayVal) };
+    if (typeVal === 'elapsed') {
+      const r = { type: 'elapsed' };
+      if (goalVal) r.goal = Number(goalVal);
+      if (goalVal && hideVal) r.hideUntilGoal = true;
+      return r;
+    }
     return { type: typeVal };
   }
 
   // ---- リストタブ ----
   function renderListTabs(lists) {
+    // 上段：特別タブのアクティブ状態
+    document.querySelectorAll('.special-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.id === currentListId);
+    });
+
+    // 下段：リストタブ
     const container = document.getElementById('list-tabs');
     container.querySelectorAll('.list-tab').forEach(el => el.remove());
     const addBtn = document.getElementById('add-list-btn');
+
     lists.forEach(list => {
       const tab = document.createElement('button');
-      tab.className = 'list-tab' + (list.id === currentListId ? ' active' : '');
+      const active = list.id === currentListId;
+      tab.className = 'list-tab' + (active ? ' active' : '');
       tab.dataset.listId = list.id;
       tab.textContent = list.name;
+      const c = listColor(list.id);
+      if (active) { tab.style.background = c; tab.style.color = '#fff'; tab.style.borderColor = c; }
+      else { tab.style.background = hexA(c, 0.16); tab.style.color = c; tab.style.borderColor = hexA(c, 0.35); }
       let longPressTimer = null;
       tab.addEventListener('touchstart', () => {
         longPressTimer = setTimeout(() => { longPressTimer = null; showListActionModal(list); }, 600);
@@ -514,7 +1068,7 @@
       tab.addEventListener('touchmove', () => clearTimeout(longPressTimer));
       tab.onclick = () => {
         currentListId = list.id;
-        document.querySelectorAll('.list-tab').forEach(t => t.classList.toggle('active', t.dataset.listId === list.id));
+        renderListTabs(lists);
         renderTasks();
       };
       tab.oncontextmenu = e => { e.preventDefault(); showListActionModal(list); };
@@ -535,46 +1089,502 @@
     return { text: `${due.getMonth()+1}/${due.getDate()}`, cls: '' };
   }
 
-  // ---- タスク表示 ----
-  function sortTasks(tasks) {
-    const undone = tasks.filter(t => !t.done).sort((a, b) => {
-      if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
-      if (a.dueDate) return -1;
-      if (b.dueDate) return 1;
-      return 0;
-    });
-    return [...undone, ...tasks.filter(t => t.done)];
+  // ---- タスクの order 値（order未設定時は createdAt で代替） ----
+  function taskOrder(t) {
+    if (t.order != null) return t.order;
+    return t.createdAt?.seconds ? t.createdAt.seconds * 1000 : 0;
   }
 
+  // ---- タスクソート ----
+  function sortTasks(tasks) {
+    const elapsed = tasks.filter(t => t.repeat?.type === 'elapsed' && !t.done);
+    const done = tasks.filter(t => t.done);
+    const undone = tasks.filter(t => !t.done && t.repeat?.type !== 'elapsed').sort((a, b) => {
+      // 期限日が違う場合は期限日優先
+      if (a.dueDate !== b.dueDate) {
+        if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+        if (a.dueDate) return -1;
+        if (b.dueDate) return 1;
+      }
+      // 同じ期限日（or 両方期限なし）は手動 order で並べる
+      return taskOrder(a) - taskOrder(b);
+    });
+    return [...undone, ...elapsed, ...done];
+  }
+
+  // ---- 上下移動 ----
+  async function moveTask(taskId, direction) {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+    const due = task.dueDate || null; // 期限なしは null 扱いに統一（フィールド未設定の古いデータ対策）
+    const group = sortTasks(
+      task.parentId
+        ? allTasks.filter(t =>
+            t.parentId === task.parentId && (t.dueDate || null) === due &&
+            !t.done && t.repeat?.type !== 'elapsed')
+        : allTasks.filter(t =>
+            t.listId === task.listId && (t.dueDate || null) === due &&
+            !t.parentId && !t.done && t.repeat?.type !== 'elapsed')
+    );
+    const idx = group.findIndex(t => t.id === taskId);
+    if (direction === 'up' && idx > 0) {
+      const prev = group[idx - 1];
+      const prevPrev = group[idx - 2];
+      const prevPrevOrd = prevPrev ? taskOrder(prevPrev) : taskOrder(prev) - 2000;
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', taskId), { order: (prevPrevOrd + taskOrder(prev)) / 2 });
+    } else if (direction === 'down' && idx < group.length - 1) {
+      const next = group[idx + 1];
+      const nextNext = group[idx + 2];
+      const nextNextOrd = nextNext ? taskOrder(nextNext) : taskOrder(next) + 2000;
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', taskId), { order: (taskOrder(next) + nextNextOrd) / 2 });
+    } else if (direction === 'top' && idx > 0) {
+      const first = group[0];
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', taskId), { order: taskOrder(first) - 2000 });
+    } else if (direction === 'bottom' && idx < group.length - 1) {
+      const last = group[group.length - 1];
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', taskId), { order: taskOrder(last) + 2000 });
+    }
+  }
+
+  // ---- タスクをプロジェクト配下へ移動 ----
+  async function moveToProject(taskId, projectId) {
+    const proj = allTasks.find(t => t.id === projectId);
+    if (!proj || !proj.isProject) return;
+    await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', taskId), { parentId: projectId, listId: proj.listId });
+  }
+
+  // ---- 並べ替え処理 ----
+  async function reorderTask(srcId, targetId) {
+    const src = allTasks.find(t => t.id === srcId);
+    const tgt = allTasks.find(t => t.id === targetId);
+    if (!src || !tgt || (src.dueDate || null) !== (tgt.dueDate || null)) return;
+    // 同じグループ内でのみ並べ替え可能（サブタスクは同じ親、トップレベルは同じリスト）
+    if ((src.parentId || null) !== (tgt.parentId || null)) return;
+    if (!src.parentId && src.listId !== tgt.listId) return;
+
+    const due = src.dueDate || null;
+    const group = sortTasks(
+      src.parentId
+        ? allTasks.filter(t => t.parentId === src.parentId && (t.dueDate || null) === due && !t.done && t.repeat?.type !== 'elapsed')
+        : allTasks.filter(t =>
+            t.listId === src.listId && (t.dueDate || null) === due &&
+            !t.parentId && !t.done && t.repeat?.type !== 'elapsed')
+    );
+    const tgtIdx = group.findIndex(t => t.id === targetId);
+    const prev = group[tgtIdx - 1];
+    const prevOrd = prev && prev.id !== srcId ? taskOrder(prev) : 0;
+    const tgtOrd = taskOrder(tgt);
+    const newOrder = (prevOrd + tgtOrd) / 2;
+    await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', srcId), { order: newOrder });
+  }
+
+  // 「目安まで隠す」経過記録タスクが、まだ目安日数に達していないか
+  function elapsedHidden(task) {
+    const r = task.repeat;
+    if (r?.type !== 'elapsed' || !r.hideUntilGoal || !r.goal || !task.lastDone) return false;
+    const last = new Date(task.lastDone + 'T00:00:00');
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    const days = Math.round((t - last) / 86400000);
+    return days < r.goal;
+  }
+
+  // 経過記録タスクが目安日数を過ぎているか（過ぎたら「今日」に常に表示する）
+  function elapsedOverGoal(task) {
+    const r = task.repeat;
+    if (r?.type !== 'elapsed' || !r.goal || !task.lastDone) return false;
+    const last = new Date(task.lastDone + 'T00:00:00');
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    const days = Math.round((t - last) / 86400000);
+    return days >= r.goal;
+  }
+
+  // ---- タスク表示 ----
   function renderTasks() {
     const container = document.getElementById('task-list');
-    const tasks = sortTasks(allTasks.filter(t => t.listId === currentListId));
+    const isAll = currentListId === '__all__';
+    const isToday = currentListId === '__today__';
+    const isTomorrow = currentListId === '__tomorrow__';
+    const isDayAfter = currentListId === '__dayafter__';
+    document.getElementById('input-area').style.display = '';
+    const isSpecial = isAll || isToday || isTomorrow || isDayAfter;
+    const isFixedDate = isToday || isTomorrow || isDayAfter;
+    document.getElementById('input-list-row').style.display = isSpecial ? '' : 'none';
+    // 今日・明日・明後日タブは日付が確定しているので日付選択を隠す
+    document.getElementById('date-group').style.display = isFixedDate ? 'none' : '';
+    if (isSpecial) {
+      const sel = document.getElementById('input-list-select');
+      const prev = sel.value;
+      sel.innerHTML = allLists.map(l => `<option value="${l.id}"${l.id === prev ? ' selected' : ''}>${l.name}</option>`).join('');
+    }
+
+    const today = todayStr();
+    const tomorrow = tomorrowStr();
+    const dayafter = dayAfterStr();
+    const filtered = isAll ? allTasks
+      : isToday ? allTasks.filter(t => {
+          if (t.parentId) return false;
+          if (t.repeat?.type === 'elapsed') {
+            // 「→翌」で先延ばし中の経過記録は今日タブから隠す
+            if (t.snoozeUntil && t.snoozeUntil > today) return false;
+            // 今日やった分は完了表示として残す
+            if (t.lastDone === today) return true;
+            // 目安日を過ぎたら（設定にかかわらず）常に今日タブに表示する
+            if (elapsedOverGoal(t)) return true;
+            // 目安まで隠す：まだ達していないので隠す（ただし一度も記録がなければ表示）
+            if (t.repeat.hideUntilGoal) return !t.lastDone;
+            // それ以外の経過記録は従来どおり期限ベース
+            return !!(t.dueDate && t.dueDate <= today);
+          }
+          if (!t.done && t.dueDate && t.dueDate <= today) return true;
+          if (t.done && t.doneAt === today) return true;
+          return false;
+        })
+      : isTomorrow ? allTasks.filter(t => !t.done && !t.parentId && (t.dueDate === tomorrow || (t.repeat?.type === 'elapsed' && t.snoozeUntil === tomorrow)))
+      : isDayAfter ? allTasks.filter(t => !t.done && !t.parentId && (t.dueDate === dayafter || (t.repeat?.type === 'elapsed' && t.snoozeUntil === dayafter)))
+      : allTasks.filter(t => t.listId === currentListId);
+    // トップレベル（parentIdなし）のみソートして表示
+    let topLevel = sortTasks(filtered.filter(t => !t.parentId));
+    // 「完了を隠す」適用。ただし今日タブは「今日やった分」を見せたいので除外しない
+    if (hideCompleted && !isToday) topLevel = topLevel.filter(t => !t.done);
+
     container.innerHTML = '';
-    if (tasks.length === 0) {
+    if (topLevel.length === 0) {
       container.innerHTML = '<div class="empty-state">タスクがありません<br>下から追加しよう</div>';
       return;
     }
-    tasks.forEach(task => {
-      const item = document.createElement('div');
-      item.className = 'task-item';
 
-      const check = document.createElement('div');
-      check.className = 'task-check' + (task.done ? ' done' : '');
-      check.textContent = task.done ? '✓' : '';
-      check.onclick = () => handleComplete(task);
+    const renderOne = task => {
+      if (task.isProject) renderProjectItem(container, task);
+      else renderTaskItem(container, task, false);
+    };
 
-      const body = document.createElement('div');
-      body.className = 'task-body';
-      body.onclick = () => showTaskEditModal(task);
+    if (isAll || isToday || isTomorrow || isDayAfter) {
+      // 今日・明日・明後日タブではアポイントを最上部にカテゴリ横断でまとめて表示
+      if (isToday || isTomorrow || isDayAfter) {
+        const appts = topLevel.filter(t => t.isAppointment);
+        if (appts.length > 0) {
+          const gh = document.createElement('div');
+          gh.className = 'group-header';
+          gh.style.color = '#ff9500';
+          const key = '__appt__';
+          const collapsed = collapsedGroups.has(key);
+          const tri = document.createElement('span');
+          tri.className = 'group-toggle' + (collapsed ? '' : ' open');
+          tri.textContent = '▶';
+          const label = document.createElement('span');
+          label.textContent = `📌 アポイント（${appts.length}）`;
+          gh.append(tri, label);
+          gh.onclick = () => {
+            if (collapsedGroups.has(key)) collapsedGroups.delete(key);
+            else collapsedGroups.add(key);
+            renderTasks();
+          };
+          container.appendChild(gh);
+          if (!collapsed) appts.forEach(renderOne);
+        }
+      }
+      // ジャンル（リスト）ごとにまとめて見出し付きで表示（アポイントは除外）
+      const groups = [...allLists.map(l => ({ id: l.id, name: l.name })), { id: null, name: 'その他' }];
+      groups.forEach(g => {
+        const groupTasks = (g.id
+          ? topLevel.filter(t => t.listId === g.id)
+          : topLevel.filter(t => !allLists.find(l => l.id === t.listId))
+        ).filter(t => !(isToday || isTomorrow || isDayAfter) || !t.isAppointment);
+        if (groupTasks.length === 0) return;
+        const key = g.id || '__other__';
+        const collapsed = collapsedGroups.has(key);
+        const gh = document.createElement('div');
+        gh.className = 'group-header';
+        gh.style.color = g.id ? listColor(g.id) : '#999';
+        const tri = document.createElement('span');
+        tri.className = 'group-toggle' + (collapsed ? '' : ' open');
+        tri.textContent = '▶';
+        const label = document.createElement('span');
+        const activeCount = groupTasks.filter(t => !t.done && !(t.repeat?.type === 'elapsed' && t.lastDone === today)).length;
+        label.textContent = `📂 ${g.name}（${activeCount}）`;
+        gh.append(tri, label);
+        gh.onclick = () => {
+          if (collapsedGroups.has(key)) collapsedGroups.delete(key);
+          else collapsedGroups.add(key);
+          renderTasks();
+        };
+        container.appendChild(gh);
+        if (!collapsed) groupTasks.forEach(renderOne);
+      });
+    } else {
+      // カテゴリ別表示でもアポイントを「📌 アポイント」見出しで分離して最上部に
+      const appts = topLevel.filter(t => t.isAppointment && !t.done);
+      const rest = topLevel.filter(t => !(t.isAppointment && !t.done));
+      if (appts.length > 0) {
+        const gh = document.createElement('div');
+        gh.className = 'group-header';
+        gh.style.color = '#ff9500';
+        const key = '__appt__';
+        const collapsed = collapsedGroups.has(key);
+        const tri = document.createElement('span');
+        tri.className = 'group-toggle' + (collapsed ? '' : ' open');
+        tri.textContent = '▶';
+        const label = document.createElement('span');
+        label.textContent = `📌 アポイント（${appts.length}）`;
+        gh.append(tri, label);
+        gh.onclick = () => {
+          if (collapsedGroups.has(key)) collapsedGroups.delete(key);
+          else collapsedGroups.add(key);
+          renderTasks();
+        };
+        container.appendChild(gh);
+        if (!collapsed) appts.forEach(renderOne);
+      }
+      rest.forEach(renderOne);
+    }
+    updateTodayTabCount();
+  }
 
-      const text = document.createElement('div');
-      text.className = 'task-text' + (task.done ? ' done' : '');
-      text.textContent = task.text;
-      body.appendChild(text);
+  // 「今日」タブに残り件数を表示（完了済み・今日やった経過記録は除く）
+  function updateTodayTabCount() {
+    const today = todayStr();
+    const n = allTasks.filter(t => {
+      if (t.parentId || t.done) return false;
+      if (t.repeat?.type === 'elapsed') {
+        if (t.lastDone === today) return false;                       // 今日やった分は数えない
+        if (t.snoozeUntil && t.snoozeUntil > today) return false;     // 先延ばし中
+        if (elapsedOverGoal(t)) return true;                          // 目安日を過ぎたら数える
+        if (t.repeat.hideUntilGoal) return !t.lastDone;               // 記録なしは表示＝数える
+        return !!(t.dueDate && t.dueDate <= today);
+      }
+      return !!(t.dueDate && t.dueDate <= today);
+    }).length;
+    const btn = document.querySelector('.special-tab[data-id="__today__"]');
+    if (btn) btn.textContent = n > 0 ? `今日 ${n}` : '今日';
+  }
 
-      if (!task.done) {
-        const meta = document.createElement('div');
-        meta.className = 'task-meta';
+  // ---- プロジェクト行 ----
+  function renderProjectItem(container, project) {
+    // サブタスクは常に全タスクから取得（「今日」タブ等のフィルタで中身が消えないように）
+    const subTasks = allTasks.filter(t => t.parentId === project.id);
+    const doneSubs = subTasks.filter(t => t.done).length;
+    const isExpanded = expandedProjects.has(project.id);
+
+    const header = document.createElement('div');
+    header.className = 'project-header' + (project.done ? ' done-project' : '');
+    if (!project.done) {
+      header.style.borderLeft = `5px solid ${listColor(project.listId)}`;
+      if (project.isAppointment) header.style.background = 'rgba(250, 220, 80, 0.18)';
+    }
+
+    const check = document.createElement('div');
+    check.className = 'task-check' + (project.done ? ' done' : '');
+    check.textContent = project.done ? '✓' : '';
+    check.onclick = e => {
+      e.stopPropagation();
+      if (!project.done && project.repeat) {
+        handleProjectComplete(project);
+      } else {
+        const toggling = !project.done;
+        updateDoc(doc(db, 'users', currentUser.uid, 'tasks', project.id), { done: toggling, doneAt: toggling ? todayStr() : null });
+        if (toggling) {
+          showUndo(`「${project.text}」を完了にしました`, () =>
+            updateDoc(doc(db, 'users', currentUser.uid, 'tasks', project.id), { done: false, doneAt: null }));
+        }
+      }
+    };
+
+    const toggle = document.createElement('span');
+    toggle.className = 'project-toggle' + (isExpanded ? ' open' : '');
+    toggle.textContent = '▶';
+
+
+    const body = document.createElement('div');
+    body.className = 'project-body';
+
+    const title = document.createElement('div');
+    title.className = 'project-title' + (project.done ? ' done' : '');
+    title.textContent = project.text;
+
+    body.append(title);
+
+    const meta = document.createElement('div');
+    meta.className = 'project-meta';
+    if (!project.done && project.dueDate) {
+      const info = formatDueDate(project.dueDate);
+      if (info) {
+        const badge = document.createElement('span');
+        badge.className = 'due-badge ' + info.cls;
+        badge.textContent = '📅 ' + info.text;
+        meta.appendChild(badge);
+      }
+    }
+    if (project.repeat) {
+      const rb = document.createElement('span');
+      rb.className = 'repeat-badge';
+      rb.textContent = '🔁 ' + repeatLabel(project.repeat);
+      meta.appendChild(rb);
+    }
+    if (subTasks.length > 0) {
+      const prog = document.createElement('span');
+      prog.className = 'project-progress';
+      prog.textContent = `${doneSubs}/${subTasks.length} 完了`;
+      meta.appendChild(prog);
+    }
+    if (meta.children.length > 0) body.append(meta);
+
+    const rollover = document.createElement('button');
+    rollover.className = 'task-rollover';
+    rollover.textContent = '→翌';
+    rollover.style.display = project.done ? 'none' : '';
+    rollover.onclick = async e => {
+      e.stopPropagation();
+      const base = project.dueDate ? new Date(project.dueDate + 'T00:00:00') : new Date();
+      base.setDate(base.getDate() + 1);
+      updateDoc(doc(db, 'users', currentUser.uid, 'tasks', project.id), { dueDate: toDateStr(base) });
+      // 期日があるサブタスクも同じ1日ずらす
+      subTasks.filter(s => s.dueDate).forEach(s => {
+        const sb = new Date(s.dueDate + 'T00:00:00');
+        sb.setDate(sb.getDate() + 1);
+        updateDoc(doc(db, 'users', currentUser.uid, 'tasks', s.id), { dueDate: toDateStr(sb) });
+      });
+    };
+
+    // ▶ トグルだけ展開/折りたたみ
+    toggle.onclick = e => {
+      e.stopPropagation();
+      if (expandedProjects.has(project.id)) {
+        expandedProjects.delete(project.id);
+      } else {
+        expandedProjects.add(project.id);
+      }
+      renderTasks();
+    };
+    // タイトル部分タップで編集
+    body.onclick = () => showTaskEditModal(project);
+    body.style.cursor = 'pointer';
+
+    // PC（マウス）でのドラッグ&ドロップ並べ替え
+    if (!project.done) {
+      header.draggable = true;
+      header.addEventListener('dragstart', e => {
+        dragSrcId = project.id;
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => header.classList.add('dragging'), 0);
+      });
+      header.addEventListener('dragend', () => {
+        header.classList.remove('dragging');
+        document.querySelectorAll('.drag-over-top').forEach(el => el.classList.remove('drag-over-top'));
+      });
+      header.addEventListener('dragover', e => {
+        e.preventDefault();
+        document.querySelectorAll('.drag-over-top').forEach(el => el.classList.remove('drag-over-top'));
+        if (dragSrcId !== project.id) header.classList.add('drag-over-top');
+      });
+      header.addEventListener('dragleave', () => header.classList.remove('drag-over-top'));
+      header.addEventListener('drop', e => {
+        e.preventDefault();
+        header.classList.remove('drag-over-top');
+        // D&Dは並べ替えのみ（プロジェクトへの取り込みは誤操作が多いので編集画面の「場所」で行う）
+        if (dragSrcId && dragSrcId !== project.id) reorderTask(dragSrcId, project.id);
+        dragSrcId = null;
+      });
+    }
+
+    if (reorderMode && !project.done) {
+      body.onclick = null;
+      body.style.cursor = 'default';
+      header.append(check, toggle, body, makeReorderControls(project.id));
+    } else {
+      header.append(check, toggle, body, rollover);
+    }
+
+    container.appendChild(header);
+
+    if (isExpanded) {
+      let subsToShow = sortTasks(subTasks);
+      if (currentListId === '__today__') {
+        // 「今日」タブでは「消す」を押した（doneAtを過去に倒した）サブタスクを展開表示から除く
+        const today = todayStr();
+        subsToShow = subsToShow.filter(s => {
+          if (s.done) return !s.doneAt || s.doneAt === today;
+          if (s.repeat?.type === 'elapsed' && s.snoozeUntil && s.snoozeUntil > today) return false;
+          return true;
+        });
+      }
+      subsToShow.forEach(sub => renderTaskItem(container, sub, true));
+
+      // サブタスク追加行
+      const addRow = document.createElement('div');
+      addRow.className = 'subtask-add-row';
+      const addInput = document.createElement('input');
+      addInput.type = 'text';
+      addInput.className = 'subtask-add-input';
+      addInput.placeholder = 'サブタスクを追加...';
+      const addBtn = document.createElement('button');
+      addBtn.className = 'subtask-add-btn';
+      addBtn.textContent = '追加';
+      const doAdd = async () => {
+        const text = addInput.value.trim();
+        if (!text) return;
+        addInput.value = '';
+        await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+          text, listId: project.listId, parentId: project.id,
+          done: false, dueDate: null, repeat: null, isProject: false,
+          createdAt: serverTimestamp()
+        });
+      };
+      addBtn.onclick = doAdd;
+      addInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) doAdd(); });
+      addRow.append(addInput, addBtn);
+      container.appendChild(addRow);
+    }
+  }
+
+  // ---- 通常タスク行 ----
+  function renderTaskItem(container, task, isSubtask) {
+    const isElapsed = task.repeat?.type === 'elapsed';
+    const item = document.createElement('div');
+    item.className = 'task-item' + (isSubtask ? ' subtask' : '') + (isElapsed ? ' elapsed-task' : '');
+    if (task.isAppointment && !task.done) {
+      item.style.background = 'rgba(250, 220, 80, 0.18)';
+      item.style.borderLeft = `5px solid ${listColor(task.listId)}`;
+    } else if (!isElapsed && !task.done) {
+      item.style.borderLeft = `5px solid ${listColor(task.listId)}`;
+    }
+    item.dataset.taskId = task.id;
+    item.dataset.dueDate = task.dueDate || '';
+
+    // 経過記録タスクを今日やった場合も「完了済み」の見た目にする
+    const doneLook = task.done || (isElapsed && task.lastDone === todayStr());
+    const check = document.createElement('div');
+    check.className = 'task-check' + (doneLook ? ' done' : '');
+    check.textContent = doneLook ? '✓' : '';
+    check.onclick = () => handleComplete(task);
+
+    const body = document.createElement('div');
+    body.className = 'task-body';
+    body.onclick = () => showTaskEditModal(task);
+
+    const text = document.createElement('div');
+    text.className = 'task-text' + (doneLook ? ' done' : '');
+    text.textContent = task.text;
+    body.appendChild(text);
+
+    if (!task.done) {
+      const meta = document.createElement('div');
+      meta.className = 'task-meta';
+      if (task.repeat?.type === 'elapsed') {
+        const eb = document.createElement('span');
+        const goal = task.repeat.goal;
+        if (task.lastDone) {
+          const last = new Date(task.lastDone + 'T00:00:00');
+          const t = new Date(); t.setHours(0, 0, 0, 0);
+          const days = Math.round((t - last) / 86400000);
+          const over = goal && days >= goal;
+          eb.className = 'repeat-badge elapsed-badge' + (over ? ' over' : '');
+          eb.textContent = (days === 0 ? '⏱ 今日やった' : `⏱ ${days}日前`) + (goal ? `／目安${goal}日` : '');
+        } else {
+          eb.className = 'repeat-badge elapsed-badge';
+          eb.textContent = '⏱ まだ記録なし' + (goal ? `／目安${goal}日` : '');
+        }
+        meta.appendChild(eb);
+      } else {
         if (task.dueDate) {
           const info = formatDueDate(task.dueDate);
           if (info) {
@@ -590,36 +1600,264 @@
           rb.textContent = '🔁 ' + repeatLabel(task.repeat);
           meta.appendChild(rb);
         }
-        if (meta.children.length > 0) body.appendChild(meta);
       }
+      if (meta.children.length > 0) body.appendChild(meta);
+    }
 
-      const del = document.createElement('button');
-      del.className = 'task-delete';
-      del.textContent = '×';
-      del.onclick = () => {
-        if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id));
+    const rollover = document.createElement('button');
+    rollover.className = 'task-rollover';
+    if (doneLook && currentListId !== '__today__') {
+      // 「今日」タブ以外では完了済みに繰越/消すボタンを出さない
+      rollover.style.display = 'none';
+    } else if (doneLook) {
+      // 完了済み（今日やった経過記録を含む）は「今日」から消すボタン
+      rollover.title = '今日の一覧から消す';
+      rollover.textContent = '消す';
+      rollover.onclick = e => {
+        e.stopPropagation();
+        if (task.done) {
+          // 完了日を過去に倒すと「今日」フィルタから外れる（翌日のクリーンアップで自動削除）
+          const prev = task.doneAt ?? null;
+          const y = new Date(); y.setDate(y.getDate() - 1);
+          updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { doneAt: toDateStr(y) });
+          showUndo(`「${task.text}」を今日の一覧から消しました`, () =>
+            updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { doneAt: prev }));
+        } else {
+          // 今日やった経過記録は記録を残したまま snoozeUntil で隠す
+          const prev = task.snoozeUntil ?? null;
+          updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { snoozeUntil: tomorrowStr() });
+          showUndo(`「${task.text}」を今日の一覧から消しました`, () =>
+            updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { snoozeUntil: prev }));
+        }
       };
+    } else {
+      rollover.title = '翌日に繰越';
+      rollover.textContent = '→翌';
+      rollover.onclick = e => {
+        e.stopPropagation();
+        if (isElapsed) {
+          // 経過記録タイプは期限ではなく snoozeUntil で先延ばし（記録日はそのまま）
+          const cur = task.snoozeUntil && task.snoozeUntil > todayStr() ? task.snoozeUntil : todayStr();
+          const base = new Date(cur + 'T00:00:00');
+          base.setDate(base.getDate() + 1);
+          updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { snoozeUntil: toDateStr(base) });
+          return;
+        }
+        const base = task.dueDate ? new Date(task.dueDate + 'T00:00:00') : new Date();
+        base.setDate(base.getDate() + 1);
+        updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { dueDate: toDateStr(base) });
+      };
+    }
 
-      item.append(check, body, del);
-      container.appendChild(item);
+    // 横スワイプで明日に先延ばし（未完了の通常タスクのみ・スマホ。並べ替えモード中は無効）
+    if (!task.done && !isElapsed && !isSubtask && !reorderMode) {
+      let startX = 0, startY = 0, swiping = false;
+      item.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        swiping = false;
+      }, { passive: true });
+      item.addEventListener('touchmove', e => {
+        const dx = e.touches[0].clientX - startX;
+        const dy = e.touches[0].clientY - startY;
+        if (!swiping && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 12) {
+          swiping = true;
+          item.classList.add('swiping');
+        }
+        if (swiping) {
+          item.style.transform = `translateX(${dx}px)`;
+          item.style.opacity = String(Math.max(0.2, 1 - Math.abs(dx) / 250));
+          e.preventDefault();
+        }
+      }, { passive: false });
+      item.addEventListener('touchend', e => {
+        if (!swiping) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        item.classList.remove('swiping');
+        if (Math.abs(dx) > 80) {
+          item.style.transform = `translateX(${dx > 0 ? 400 : -400}px)`;
+          item.style.opacity = '0';
+          updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { dueDate: tomorrowStr() });
+        } else {
+          item.style.transform = '';
+          item.style.opacity = '';
+        }
+      });
+    }
+
+    // PC（マウス）でのドラッグ&ドロップ並べ替え（サブタスクも同じプロジェクト内で可）
+    if (!task.done && !isElapsed) {
+      item.draggable = true;
+      item.addEventListener('dragstart', e => {
+        dragSrcId = task.id;
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => item.classList.add('dragging'), 0);
+      });
+      item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        document.querySelectorAll('.drag-over-top').forEach(el => el.classList.remove('drag-over-top'));
+      });
+      item.addEventListener('dragover', e => {
+        e.preventDefault();
+        document.querySelectorAll('.drag-over-top').forEach(el => el.classList.remove('drag-over-top'));
+        if (dragSrcId !== task.id) item.classList.add('drag-over-top');
+      });
+      item.addEventListener('dragleave', () => item.classList.remove('drag-over-top'));
+      item.addEventListener('drop', e => {
+        e.preventDefault();
+        item.classList.remove('drag-over-top');
+        if (dragSrcId && dragSrcId !== task.id) reorderTask(dragSrcId, task.id);
+        dragSrcId = null;
+      });
+    }
+
+    if (reorderMode && !task.done && !isElapsed) {
+      body.onclick = null;
+      body.style.cursor = 'default';
+      item.append(check, body, makeReorderControls(task.id));
+    } else {
+      item.append(check, body, rollover);
+    }
+    container.appendChild(item);
+  }
+
+  // ---- プロジェクトの複製（サブタスクごと、未完了状態でコピー） ----
+  async function duplicateProject(project) {
+    const newProj = await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+      text: project.text + ' のコピー',
+      listId: project.listId,
+      parentId: null,
+      done: false,
+      isProject: true,
+      dueDate: project.dueDate || null,
+      repeat: project.repeat || null,
+      isAppointment: project.isAppointment || false,
+      createdAt: serverTimestamp()
+    });
+    const subs = allTasks.filter(t => t.parentId === project.id);
+    for (const sub of subs) {
+      await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+        text: sub.text,
+        listId: project.listId,
+        parentId: newProj.id,
+        done: false,
+        dueDate: sub.dueDate || null,
+        repeat: sub.repeat || null,
+        isProject: false,
+        createdAt: serverTimestamp()
+      });
+    }
+  }
+
+  // ---- プロジェクト完了（繰り返し＋サブタスク復元） ----
+  async function handleProjectComplete(project) {
+    const nextDate = nextRepeatDate(project.dueDate, project.repeat);
+    await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', project.id), { done: true, doneAt: todayStr() });
+    // 「元に戻す」用に、自動生成したドキュメントのIDを控えておく
+    const createdIds = [];
+    // 並行運用の重複防止：同名・同リスト・同期限の未完了プロジェクトが既にあれば次号を作らない
+    const dupExists = allTasks.some(t =>
+      t.isProject && !t.done && t.id !== project.id &&
+      t.text === project.text && t.listId === project.listId && t.dueDate === nextDate
+    );
+    if (!dupExists) {
+      const newProj = await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+        text: project.text,
+        listId: project.listId,
+        parentId: null,
+        done: false,
+        isProject: true,
+        dueDate: nextDate,
+        repeat: project.repeat,
+        isAppointment: project.isAppointment || false,
+        createdAt: serverTimestamp()
+      });
+      createdIds.push(newProj.id);
+      // サブタスクを全部未完了でコピー
+      const subs = allTasks.filter(t => t.parentId === project.id);
+      for (const sub of subs) {
+        const r = await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+          text: sub.text,
+          listId: project.listId,
+          parentId: newProj.id,
+          done: false,
+          dueDate: sub.dueDate || null,
+          repeat: sub.repeat || null,
+          isProject: false,
+          createdAt: serverTimestamp()
+        });
+        createdIds.push(r.id);
+      }
+    }
+    showUndo(`「${project.text}」を完了にしました`, async () => {
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', project.id), { done: false, doneAt: null });
+      for (const id of createdIds) {
+        await deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', id));
+      }
     });
   }
 
-  // ---- 完了処理（繰り返し対応） ----
+  // ---- 完了処理 ----
   async function handleComplete(task) {
+    if (task.repeat?.type === 'elapsed') {
+      // 経過記録タイプ：完了せず最終実施日をリセット
+      const prevLastDone = task.lastDone ?? null;
+      const prevSnooze = task.snoozeUntil ?? null;
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { lastDone: todayStr(), snoozeUntil: null });
+      showUndo(`「${task.text}」を記録しました`, () =>
+        updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { lastDone: prevLastDone, snoozeUntil: prevSnooze }));
+      return;
+    }
     if (!task.done && task.repeat) {
       const nextDate = nextRepeatDate(task.dueDate, task.repeat);
-      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: true });
-      await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: true, doneAt: todayStr() });
+      const newRef = await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
         text: task.text,
         listId: task.listId,
+        parentId: task.parentId || null,
         done: false,
         dueDate: nextDate,
         repeat: task.repeat,
+        isAppointment: task.isAppointment || false,
         createdAt: serverTimestamp()
       });
+      showUndo(`「${task.text}」を完了にしました`, async () => {
+        await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: false, doneAt: null });
+        await deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', newRef.id));
+      });
     } else {
-      updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: !task.done });
+      const toggling = !task.done;
+      await updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: toggling, doneAt: toggling ? todayStr() : null });
+      if (toggling) {
+        showUndo(`「${task.text}」を完了にしました`, () =>
+          updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { done: false, doneAt: null }));
+      }
+    }
+
+    // 親プロジェクトの自動完了は行わない（プロジェクトの完了はチェックを押したときだけ）
+  }
+
+  // ---- 古い完了タスクの自動削除（完了から7日経過したもの） ----
+  async function cleanupOldCompleted() {
+    if (!currentUser) return;
+    // 完了日が今日より前（＝日付が変わった）タスクを削除。今日完了した分は今日のうちは残す
+    const today = todayStr();
+    const targets = allTasks.filter(t => {
+      if (!t.done) return false;
+      // サブタスクは個別に消さない（親プロジェクトが消えるときに一緒に削除する）。
+      // 繰り返しプロジェクトの次号テンプレートを欠けさせないため。
+      if (t.parentId) return false;
+      // 完了日（doneAt）。無い古いデータは作成日で代替
+      const d = t.doneAt || (t.createdAt?.seconds ? toDateStr(new Date(t.createdAt.seconds * 1000)) : null);
+      return d && d < today;
+    });
+    for (const t of targets) {
+      await deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', t.id));
+      // 完了プロジェクトはサブタスクも削除
+      if (t.isProject) {
+        allTasks.filter(s => s.parentId === t.id).forEach(s =>
+          deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', s.id)));
+      }
     }
   }
 
@@ -628,65 +1866,179 @@
     const input = document.getElementById('task-input');
     const text = input.value.trim();
     if (!text || !currentListId) return;
-    const dueDate = document.getElementById('due-date-input').value || null;
+    const specialIds = ['__all__', '__today__', '__tomorrow__', '__dayafter__'];
+    const listId = specialIds.includes(currentListId)
+      ? document.getElementById('input-list-select').value
+      : currentListId;
+    if (!listId) return;
+    let dueDate;
+    if (currentListId === '__today__') dueDate = todayStr();
+    else if (currentListId === '__tomorrow__') dueDate = tomorrowStr();
+    else if (currentListId === '__dayafter__') dueDate = dayAfterStr();
+    else dueDate = document.getElementById('due-date-input').value || null;
     const repeatType = document.getElementById('repeat-select').value;
-    const repeatDay = document.getElementById('repeat-day-select').value;
-    const repeat = buildRepeat(repeatType, repeatDay);
+    const repeatDay = dueDate && repeatType === 'weekly'
+      ? new Date(dueDate + 'T00:00:00').getDay()
+      : document.getElementById('repeat-day-select').value;
+    const repeat = buildRepeat(repeatType, repeatDay, document.getElementById('elapsed-goal-input').value, document.getElementById('elapsed-hide-check').checked);
+    const isProject = document.getElementById('is-project-check').checked;
+    const isAppointment = document.getElementById('is-appointment-check').checked;
     input.value = '';
+    document.getElementById('is-project-check').checked = false;
+    document.getElementById('is-appointment-check').checked = false;
     await addDoc(collection(db, 'users', currentUser.uid, 'tasks'), {
-      text, listId: currentListId, done: false, dueDate, repeat, createdAt: serverTimestamp()
+      text, listId, parentId: null,
+      done: false, dueDate, repeat, isProject, isAppointment,
+      createdAt: serverTimestamp()
     });
   }
 
   document.getElementById('add-btn').onclick = addTask;
-  document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+  document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) addTask(); });
 
   const dueDateInput = document.getElementById('due-date-input');
   const clearDateBtn = document.getElementById('clear-date-btn');
-  dueDateInput.addEventListener('change', () => { clearDateBtn.style.display = dueDateInput.value ? 'inline' : 'none'; });
-  clearDateBtn.onclick = () => { dueDateInput.value = ''; clearDateBtn.style.display = 'none'; };
+  clearDateBtn.onclick = () => { dueDateInput.value = ''; clearDateBtn.style.display = 'none'; syncRepeatDaySelect(); };
 
   const repeatSelect = document.getElementById('repeat-select');
   const repeatDaySelect = document.getElementById('repeat-day-select');
-  repeatSelect.addEventListener('change', () => {
-    repeatDaySelect.style.display = repeatSelect.value === 'weekly' ? 'inline' : 'none';
+  function syncRepeatDaySelect() {
+    const isWeekly = repeatSelect.value === 'weekly';
+    const hasDate = !!dueDateInput.value;
+    repeatDaySelect.style.display = isWeekly && !hasDate ? 'inline' : 'none';
+    const isElapsed = repeatSelect.value === 'elapsed';
+    document.getElementById('elapsed-goal-input').style.display = isElapsed ? 'inline-block' : 'none';
+    document.getElementById('elapsed-hide-label').style.display = isElapsed ? 'inline-flex' : 'none';
+  }
+  repeatSelect.addEventListener('change', syncRepeatDaySelect);
+  dueDateInput.addEventListener('change', () => {
+    clearDateBtn.style.display = dueDateInput.value ? 'inline' : 'none';
+    syncRepeatDaySelect();
   });
 
   // ---- タスク編集モーダル ----
   function showTaskEditModal(task) {
     activeTaskForEdit = task;
     document.getElementById('task-edit-input').value = task.text;
+    // リスト選択を初期化（サブタスクは親プロジェクトのリストに従うため非表示）
+    const listRow = document.getElementById('task-edit-list-row');
+    const locRow = document.getElementById('task-edit-location-row');
+    if (task.isProject) {
+      // プロジェクト：リストのみ変更可
+      listRow.style.display = '';
+      locRow.style.display = 'none';
+      document.getElementById('task-edit-list').innerHTML =
+        allLists.map(l => `<option value="${l.id}"${l.id === task.listId ? ' selected' : ''}>${l.name}</option>`).join('');
+    } else {
+      // 通常タスク・サブタスク：置き場所（リスト直下 or プロジェクトの中）を選べる
+      listRow.style.display = 'none';
+      locRow.style.display = '';
+      let opts = allLists.map(l => `<option value="list:${l.id}">${l.name}（直下）</option>`).join('');
+      opts += allTasks.filter(t => t.isProject && !t.done)
+        .map(p => `<option value="proj:${p.id}">${p.text} の中</option>`).join('');
+      const sel = document.getElementById('task-edit-location');
+      sel.innerHTML = opts;
+      sel.value = task.parentId ? `proj:${task.parentId}` : `list:${task.listId}`;
+    }
+    // プロジェクト変換ボタン：通常タスク（プロジェクトでもサブタスクでもない）のときだけ表示
+    document.getElementById('task-edit-to-project').style.display =
+      (!task.isProject && !task.parentId) ? '' : 'none';
+    // 複製ボタンはプロジェクトのときだけ表示
+    document.getElementById('task-edit-duplicate').style.display = task.isProject ? '' : 'none';
+    // プロジェクト・通常タスク両方で期限・繰り返しを編集可能
+    document.getElementById('task-edit-date-row').style.display = '';
+    document.getElementById('task-edit-repeat-row').style.display = '';
     document.getElementById('task-edit-date').value = task.dueDate || '';
     const editRepeat = document.getElementById('task-edit-repeat');
     const editRepeatDay = document.getElementById('task-edit-repeat-day');
     editRepeat.value = task.repeat ? task.repeat.type : '';
     editRepeatDay.value = task.repeat?.day ?? 1;
-    editRepeatDay.style.display = editRepeat.value === 'weekly' ? 'inline' : 'none';
+    document.getElementById('task-edit-elapsed-goal').value = task.repeat?.goal ?? '';
+    document.getElementById('task-edit-elapsed-hide').checked = !!task.repeat?.hideUntilGoal;
+    document.getElementById('task-edit-lastdone').value = task.lastDone || '';
+    syncEditRepeatDaySelect();
+    document.getElementById('task-edit-appointment').checked = !!task.isAppointment;
     document.getElementById('task-edit-modal').style.display = 'flex';
     document.getElementById('task-edit-input').focus();
   }
 
-  document.getElementById('task-edit-repeat').addEventListener('change', e => {
-    document.getElementById('task-edit-repeat-day').style.display = e.target.value === 'weekly' ? 'inline' : 'none';
-  });
+  function syncEditRepeatDaySelect() {
+    const v = document.getElementById('task-edit-repeat').value;
+    const isWeekly = v === 'weekly';
+    const hasDate = !!document.getElementById('task-edit-date').value;
+    document.getElementById('task-edit-repeat-day').style.display = isWeekly && !hasDate ? 'inline' : 'none';
+    document.getElementById('task-edit-elapsed-goal').style.display = v === 'elapsed' ? 'inline-block' : 'none';
+    document.getElementById('task-edit-elapsed-hide-label').style.display = v === 'elapsed' ? 'inline-flex' : 'none';
+    document.getElementById('task-edit-lastdone-row').style.display = v === 'elapsed' ? '' : 'none';
+  }
+  document.getElementById('task-edit-repeat').addEventListener('change', syncEditRepeatDaySelect);
+  document.getElementById('task-edit-date').addEventListener('change', syncEditRepeatDaySelect);
   document.getElementById('task-edit-clear-date').onclick = () => { document.getElementById('task-edit-date').value = ''; };
+  document.getElementById('task-edit-clear-lastdone').onclick = () => { document.getElementById('task-edit-lastdone').value = ''; };
 
   document.getElementById('task-edit-ok').onclick = () => {
     const text = document.getElementById('task-edit-input').value.trim();
     if (!text) return;
     const dueDate = document.getElementById('task-edit-date').value || null;
     const repeatType = document.getElementById('task-edit-repeat').value;
-    const repeatDay = document.getElementById('task-edit-repeat-day').value;
-    const repeat = buildRepeat(repeatType, repeatDay);
-    updateDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id), { text, dueDate, repeat });
+    const repeatDay = dueDate && repeatType === 'weekly'
+      ? new Date(dueDate + 'T00:00:00').getDay()
+      : document.getElementById('task-edit-repeat-day').value;
+    const repeat = buildRepeat(repeatType, repeatDay, document.getElementById('task-edit-elapsed-goal').value, document.getElementById('task-edit-elapsed-hide').checked);
+    let listId, parentId;
+    if (activeTaskForEdit.isProject) {
+      listId = document.getElementById('task-edit-list').value;
+      parentId = null;
+    } else {
+      const loc = document.getElementById('task-edit-location').value;
+      if (loc.startsWith('proj:')) {
+        parentId = loc.slice(5);
+        const p = allTasks.find(t => t.id === parentId);
+        listId = p ? p.listId : activeTaskForEdit.listId;
+      } else {
+        parentId = null;
+        listId = loc.slice(5);
+      }
+    }
+    const isAppointment = document.getElementById('task-edit-appointment').checked;
+    const lastDone = document.getElementById('task-edit-lastdone').value || null;
+    updateDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id), { text, dueDate, repeat, listId, parentId, isAppointment, lastDone });
+    // プロジェクトのカテゴリを変えたら、中のサブタスクも同じカテゴリに移す
+    if (activeTaskForEdit.isProject && listId !== activeTaskForEdit.listId) {
+      allTasks.filter(t => t.parentId === activeTaskForEdit.id).forEach(s =>
+        updateDoc(doc(db, 'users', currentUser.uid, 'tasks', s.id), { listId }));
+    }
     document.getElementById('task-edit-modal').style.display = 'none';
   };
   document.getElementById('task-edit-delete').onclick = () => {
     document.getElementById('task-edit-modal').style.display = 'none';
-    if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id));
+    const task = activeTaskForEdit;
+    if (task.isProject) {
+      const subs = allTasks.filter(t => t.parentId === task.id);
+      if (confirm(`「${task.text}」とサブタスクをすべて削除しますか？`)) {
+        deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id));
+        subs.forEach(s => deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', s.id)));
+      }
+    } else {
+      if (confirm('削除しますか？')) deleteDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id));
+    }
   };
+  document.getElementById('task-edit-to-project').onclick = () => {
+    document.getElementById('task-edit-modal').style.display = 'none';
+    if (confirm(`「${activeTaskForEdit.text}」をプロジェクトに変換しますか？`)) {
+      updateDoc(doc(db, 'users', currentUser.uid, 'tasks', activeTaskForEdit.id), { isProject: true });
+    }
+  };
+  document.getElementById('task-edit-duplicate').onclick = () => {
+    document.getElementById('task-edit-modal').style.display = 'none';
+    duplicateProject(activeTaskForEdit);
+  };
+  document.getElementById('task-move-top').onclick = () => moveTask(activeTaskForEdit.id, 'top');
+  document.getElementById('task-move-up').onclick = () => moveTask(activeTaskForEdit.id, 'up');
+  document.getElementById('task-move-down').onclick = () => moveTask(activeTaskForEdit.id, 'down');
+  document.getElementById('task-move-bottom').onclick = () => moveTask(activeTaskForEdit.id, 'bottom');
   document.getElementById('task-edit-cancel').onclick = () => { document.getElementById('task-edit-modal').style.display = 'none'; };
-  document.getElementById('task-edit-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('task-edit-ok').click(); });
+  document.getElementById('task-edit-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) document.getElementById('task-edit-ok').click(); });
 
   // ---- リスト追加モーダル ----
   document.getElementById('add-list-btn').onclick = () => {
@@ -700,12 +2052,24 @@
     document.getElementById('list-add-modal').style.display = 'none';
   };
   document.getElementById('list-add-cancel').onclick = () => { document.getElementById('list-add-modal').style.display = 'none'; };
-  document.getElementById('list-add-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('list-add-ok').click(); });
+  document.getElementById('list-add-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) document.getElementById('list-add-ok').click(); });
 
   // ---- リスト操作モーダル ----
   function showListActionModal(list) {
     activeListForModal = list;
     document.getElementById('list-action-title').textContent = `「${list.name}」`;
+    const current = listColor(list.id);
+    const swatches = document.getElementById('list-color-swatches');
+    swatches.innerHTML = '';
+    LIST_COLORS.forEach(c => {
+      const s = document.createElement('div');
+      s.style.cssText = `width:32px;height:32px;border-radius:50%;background:${c};cursor:pointer;box-sizing:border-box;border:3px solid ${c === current ? '#333' : 'transparent'};transition:border-color 0.15s;`;
+      s.onclick = () => {
+        updateDoc(doc(db, 'users', currentUser.uid, 'lists', list.id), { color: c });
+        document.getElementById('list-action-modal').style.display = 'none';
+      };
+      swatches.appendChild(s);
+    });
     document.getElementById('list-action-modal').style.display = 'flex';
   }
   document.getElementById('list-cancel-btn').onclick = () => { document.getElementById('list-action-modal').style.display = 'none'; };
@@ -724,7 +2088,7 @@
     document.getElementById('list-rename-modal').style.display = 'none';
   };
   document.getElementById('list-rename-cancel').onclick = () => { document.getElementById('list-rename-modal').style.display = 'none'; };
-  document.getElementById('list-rename-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('list-rename-ok').click(); });
+  document.getElementById('list-rename-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) document.getElementById('list-rename-ok').click(); });
   document.getElementById('list-delete-btn').onclick = () => {
     document.getElementById('list-action-modal').style.display = 'none';
     if (confirm(`「${activeListForModal.name}」を削除しますか？`))
