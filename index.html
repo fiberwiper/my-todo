@@ -985,6 +985,12 @@
     d.setDate(d.getDate() + 1);
     return toDateStr(d);
   }
+  // 翌週の月曜日（今日が月曜なら7日後、日曜なら翌日）
+  function nextMondayStr() {
+    const d = new Date();
+    d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7));
+    return toDateStr(d);
+  }
   function dayAfterStr() {
     const d = new Date();
     d.setDate(d.getDate() + 2);
@@ -1445,6 +1451,25 @@
       });
     };
 
+    const rolloverWeek = document.createElement('button');
+    rolloverWeek.className = 'task-rollover';
+    rolloverWeek.title = '翌週の月曜日に繰越';
+    rolloverWeek.textContent = '→翌週';
+    rolloverWeek.style.display = project.done ? 'none' : '';
+    rolloverWeek.onclick = e => {
+      e.stopPropagation();
+      const target = nextMondayStr();
+      const from = project.dueDate || todayStr();
+      const shift = Math.round((new Date(target + 'T00:00:00') - new Date(from + 'T00:00:00')) / 86400000);
+      updateDoc(doc(db, 'users', currentUser.uid, 'tasks', project.id), { dueDate: target });
+      // 期日があるサブタスクも同じ日数ずらす
+      subTasks.filter(s => s.dueDate).forEach(s => {
+        const sb = new Date(s.dueDate + 'T00:00:00');
+        sb.setDate(sb.getDate() + shift);
+        updateDoc(doc(db, 'users', currentUser.uid, 'tasks', s.id), { dueDate: toDateStr(sb) });
+      });
+    };
+
     // ▶ トグルだけ展開/折りたたみ
     toggle.onclick = e => {
       e.stopPropagation();
@@ -1491,7 +1516,7 @@
       body.style.cursor = 'default';
       header.append(check, toggle, body, makeReorderControls(project.id));
     } else {
-      header.append(check, toggle, body, rollover);
+      header.append(check, toggle, body, rollover, rolloverWeek);
     }
 
     container.appendChild(header);
@@ -1649,6 +1674,21 @@
       };
     }
 
+    const rolloverWeek = document.createElement('button');
+    rolloverWeek.className = 'task-rollover';
+    rolloverWeek.title = '翌週の月曜日に繰越';
+    rolloverWeek.textContent = '→翌週';
+    if (doneLook) {
+      rolloverWeek.style.display = 'none';
+    } else {
+      rolloverWeek.onclick = e => {
+        e.stopPropagation();
+        // 経過記録タイプは期限ではなく snoozeUntil で先延ばし（記録日はそのまま）
+        const field = isElapsed ? 'snoozeUntil' : 'dueDate';
+        updateDoc(doc(db, 'users', currentUser.uid, 'tasks', task.id), { [field]: nextMondayStr() });
+      };
+    }
+
     // 横スワイプで明日に先延ばし（未完了の通常タスクのみ・スマホ。並べ替えモード中は無効）
     if (!task.done && !isElapsed && !isSubtask && !reorderMode) {
       let startX = 0, startY = 0, swiping = false;
@@ -1716,7 +1756,7 @@
       body.style.cursor = 'default';
       item.append(check, body, makeReorderControls(task.id));
     } else {
-      item.append(check, body, rollover);
+      item.append(check, body, rollover, rolloverWeek);
     }
     container.appendChild(item);
   }
