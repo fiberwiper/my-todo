@@ -300,6 +300,13 @@
       flex-shrink: 0;
       white-space: nowrap;
     }
+    /* 翌日繰越はよく使うので右端に置き、タップ範囲を広げて目立たせる */
+    .task-rollover.primary {
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 0.8rem;
+      padding: 10px 4px 10px 14px;
+    }
     .reorder-controls { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; flex-shrink: 0; }
     .reorder-btn-mini {
       background: var(--surface-2);
@@ -1435,7 +1442,7 @@
     if (meta.children.length > 0) body.append(meta);
 
     const rollover = document.createElement('button');
-    rollover.className = 'task-rollover';
+    rollover.className = 'task-rollover primary';
     rollover.textContent = '→翌';
     rollover.style.display = project.done ? 'none' : '';
     rollover.onclick = async e => {
@@ -1516,7 +1523,7 @@
       body.style.cursor = 'default';
       header.append(check, toggle, body, makeReorderControls(project.id));
     } else {
-      header.append(check, toggle, body, rollover, rolloverWeek);
+      header.append(check, toggle, body, rolloverWeek, rollover);
     }
 
     container.appendChild(header);
@@ -1657,6 +1664,7 @@
       };
     } else {
       rollover.title = '翌日に繰越';
+      rollover.classList.add('primary');
       rollover.textContent = '→翌';
       rollover.onclick = e => {
         e.stopPropagation();
@@ -1756,7 +1764,7 @@
       body.style.cursor = 'default';
       item.append(check, body, makeReorderControls(task.id));
     } else {
-      item.append(check, body, rollover, rolloverWeek);
+      item.append(check, body, rolloverWeek, rollover);
     }
     container.appendChild(item);
   }
