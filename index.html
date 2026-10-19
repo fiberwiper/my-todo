@@ -1227,7 +1227,7 @@
     if (isSpecial) {
       const sel = document.getElementById('input-list-select');
       const prev = sel.value;
-      sel.innerHTML = allLists.map(l => `<option value="${l.id}"${l.id === prev ? ' selected' : ''}>${l.name}</option>`).join('');
+      sel.replaceChildren(...allLists.map(l => new Option(l.name, l.id, false, l.id === prev)));
     }
 
     const today = todayStr();
@@ -1975,17 +1975,16 @@
       // プロジェクト：リストのみ変更可
       listRow.style.display = '';
       locRow.style.display = 'none';
-      document.getElementById('task-edit-list').innerHTML =
-        allLists.map(l => `<option value="${l.id}"${l.id === task.listId ? ' selected' : ''}>${l.name}</option>`).join('');
+      document.getElementById('task-edit-list').replaceChildren(
+        ...allLists.map(l => new Option(l.name, l.id, false, l.id === task.listId)));
     } else {
       // 通常タスク・サブタスク：置き場所（リスト直下 or プロジェクトの中）を選べる
       listRow.style.display = 'none';
       locRow.style.display = '';
-      let opts = allLists.map(l => `<option value="list:${l.id}">${l.name}（直下）</option>`).join('');
-      opts += allTasks.filter(t => t.isProject && !t.done)
-        .map(p => `<option value="proj:${p.id}">${p.text} の中</option>`).join('');
       const sel = document.getElementById('task-edit-location');
-      sel.innerHTML = opts;
+      sel.replaceChildren(
+        ...allLists.map(l => new Option(`${l.name}（直下）`, `list:${l.id}`)),
+        ...allTasks.filter(t => t.isProject && !t.done).map(p => new Option(`${p.text} の中`, `proj:${p.id}`)));
       sel.value = task.parentId ? `proj:${task.parentId}` : `list:${task.listId}`;
     }
     // プロジェクト変換ボタン：通常タスク（プロジェクトでもサブタスクでもない）のときだけ表示
